@@ -1,0 +1,32 @@
+[{
+  "_id": {
+    "$oid": "694bd84387853e442e62a1d4"
+  },
+  "user_id": 1,
+  "username": "testuser",
+  "password": "password123"
+},
+{
+  "_id": {
+    "$oid": "694bd84987853e442e62a1d6"
+  },
+  "user_id": 2,
+  "username": "admin",
+  "password": "admin123"
+},
+{
+  "_id": {
+    "$oid": "694bd85187853e442e62a1d8"
+  },
+  "user_id": 3,
+  "username": "ibrahim",
+  "password": "ibra123"
+},
+{
+  "_id": {
+    "$oid": "694bd85787853e442e62a1da"
+  },
+  "user_id": 4,
+  "username": "anna",
+  "password": "anna321"
+}]

@@ -1,0 +1,8 @@
+[{
+  "_id": "counters",
+  "next_book_id": 6,
+  "next_author_id": 6,
+  "next_genre_id": 8,
+  "next_user_id": 5,
+  "next_review_id": 9
+}]

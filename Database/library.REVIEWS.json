@@ -1,0 +1,108 @@
+[{
+  "_id": {
+    "$oid": "694bd88387853e442e62a1e2"
+  },
+  "review_id": 1,
+  "book_id": 1,
+  "user_id": 1,
+  "username": "testuser",
+  "rating": 7,
+  "review_text": "En fantastisk klassiker! Mycket rolig.",
+  "review_date": "2024-01-15"
+},
+{
+  "_id": {
+    "$oid": "694bd98d87853e442e62a1f8"
+  },
+  "review_id": 2,
+  "book_id": 1,
+  "user_id": 2,
+  "username": "admin",
+  "rating": 8,
+  "review_text": null,
+  "review_date": "2024-01-20"
+},
+{
+  "_id": {
+    "$oid": "694bd99387853e442e62a1fa"
+  },
+  "review_id": 3,
+  "book_id": 1,
+  "user_id": 3,
+  "username": "ibrahim",
+  "rating": 9,
+  "review_text": null,
+  "review_date": "2024-01-25"
+},
+{
+  "_id": {
+    "$oid": "694bd99987853e442e62a1fc"
+  },
+  "review_id": 4,
+  "book_id": 2,
+  "user_id": 1,
+  "username": "testuser",
+  "rating": 6,
+  "review_text": null,
+  "review_date": "2024-02-01"
+},
+{
+  "_id": {
+    "$oid": "694bd99f87853e442e62a1fe"
+  },
+  "review_id": 5,
+  "book_id": 2,
+  "user_id": 3,
+  "username": "ibrahim",
+  "rating": 7,
+  "review_text": null,
+  "review_date": "2024-02-05"
+},
+{
+  "_id": {
+    "$oid": "694bd9a787853e442e62a200"
+  },
+  "review_id": 6,
+  "book_id": 2,
+  "user_id": 4,
+  "username": "anna",
+  "rating": 8,
+  "review_text": null,
+  "review_date": "2024-02-10"
+},
+{
+  "_id": {
+    "$oid": "694bd9ac87853e442e62a202"
+  },
+  "review_id": 7,
+  "book_id": 3,
+  "user_id": 2,
+  "username": "admin",
+  "rating": 9,
+  "review_text": "Bästa fantasy-serien någonsin.",
+  "review_date": "2024-03-01"
+},
+{
+  "_id": {
+    "$oid": "694bd9b487853e442e62a204"
+  },
+  "review_id": 10,
+  "book_id": 4,
+  "user_id": 1,
+  "username": "testuser",
+  "rating": 8,
+  "review_text": null,
+  "review_date": "2024-04-01"
+},
+{
+  "_id": {
+    "$oid": "694bd9ba87853e442e62a206"
+  },
+  "review_id": 13,
+  "book_id": 5,
+  "user_id": 1,
+  "username": "testuser",
+  "rating": 5,
+  "review_text": null,
+  "review_date": "2024-05-01"
+}]

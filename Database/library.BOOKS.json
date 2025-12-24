@@ -1,0 +1,157 @@
+[{
+  "_id": {
+    "$oid": "694bd82087853e442e62a1cf"
+  },
+  "book_id": 1,
+  "isbn": "9780060934347",
+  "title": "Don Quixote",
+  "published_date": "1605-01-16",
+  "added_by_user_id": 2,
+  "authors": [
+    {
+      "author_id": 1,
+      "name": "Miguel de Cervantes",
+      "birth_date": "1547-09-29"
+    }
+  ],
+  "genres": [
+    {
+      "genre_id": 1,
+      "name": "Fantasy"
+    },
+    {
+      "genre_id": 2,
+      "name": "Classic"
+    }
+  ],
+  "average_rating": 8,
+  "rating_count": 3
+},
+{
+  "_id": {
+    "$oid": "694bd8b687853e442e62a1e8"
+  },
+  "book_id": 2,
+  "isbn": "9780486406510",
+  "title": "A Tale of Two Cities",
+  "published_date": "1859-04-30",
+  "added_by_user_id": 2,
+  "authors": [
+    {
+      "author_id": 2,
+      "name": "Charles Dickens",
+      "birth_date": "1812-02-07"
+    }
+  ],
+  "genres": [
+    {
+      "genre_id": 1,
+      "name": "Fantasy"
+    },
+    {
+      "genre_id": 4,
+      "name": "Historical Fiction"
+    },
+    {
+      "genre_id": 7,
+      "name": "Drama"
+    }
+  ],
+  "average_rating": 7,
+  "rating_count": 3
+},
+{
+  "_id": {
+    "$oid": "694bd8bc87853e442e62a1ea"
+  },
+  "book_id": 3,
+  "isbn": "9780618640157",
+  "title": "The Lord of the Rings",
+  "published_date": "1954-07-29",
+  "added_by_user_id": 2,
+  "authors": [
+    {
+      "author_id": 3,
+      "name": "J.R.R. Tolkien",
+      "birth_date": "1892-01-03"
+    }
+  ],
+  "genres": [
+    {
+      "genre_id": 3,
+      "name": "Adventure"
+    },
+    {
+      "genre_id": 2,
+      "name": "Classic"
+    },
+    {
+      "genre_id": 1,
+      "name": "Fantasy"
+    }
+  ],
+  "average_rating": 9.67,
+  "rating_count": 3
+},
+{
+  "_id": {
+    "$oid": "694bd8c387853e442e62a1ec"
+  },
+  "book_id": 4,
+  "isbn": "9780156012195",
+  "title": "The Little Prince",
+  "published_date": "1943-04-06",
+  "added_by_user_id": 2,
+  "authors": [
+    {
+      "author_id": 4,
+      "name": "Antoine de Saint-Exupéry",
+      "birth_date": "1900-06-29"
+    }
+  ],
+  "genres": [
+    {
+      "genre_id": 5,
+      "name": "Philosophical"
+    },
+    {
+      "genre_id": 1,
+      "name": "Fantasy"
+    }
+  ],
+  "average_rating": 8.67,
+  "rating_count": 3
+},
+{
+  "_id": {
+    "$oid": "694bd8cb87853e442e62a1ee"
+  },
+  "book_id": 5,
+  "isbn": "9780439708180",
+  "title": "Harry Potter and the Philosopher's Stone",
+  "published_date": "1997-06-26",
+  "added_by_user_id": 2,
+  "authors": [
+    {
+      "author_id": 5,
+      "name": "J.K. Rowling",
+      "birth_date": "1965-07-31"
+    }
+  ],
+  "genres": [
+    {
+      "genre_id": 3,
+      "name": "Adventure"
+    },
+    {
+      "genre_id": 6,
+      "name": "Young Adult"
+    },
+    {
+      "genre_id": 2,
+      "name": "Classic"
+    }
+  ],
+  "average_rating": 6,
+  "rating_count": 3
+}]
