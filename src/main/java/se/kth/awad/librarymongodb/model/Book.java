@@ -1,200 +1,122 @@
 package se.kth.awad.librarymongodb.model;
 
-import java.sql.Date;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
- * Representerar en bok från T_Book-tabellen i LibraryDB.
- * Har relationer till Genre, Author och Rating.
+ * Represents a book in the library system.
+ * In MongoDB, authors and genres are stored as subdocuments within the Book document.
  */
 public class Book {
-    private int bookID;
-    private String ISBN, title;
-    private Date publishedDate;
-    // M:N-relationer (många-till-många)
-    private ArrayList<Author> authors;
-    private ArrayList<Genre> genres;
-    private ArrayList<Review> reviews;
-    // Betygsinformation från T_Rating
-    private int averageRating;
-    private int numRatings;
-    // Användarspårning (Väl godkänd)
-    private int addedByUserID;
-    private String addedByUsername;
+    private int bookId;
+    private String isbn;
+    private String title;
+    private String publishedDate;
+    private List<Author> authors;
+    private List<Genre> genres;
+    private double averageRating;
+    private int reviewCount;
 
-    /**
-     * Konstruktor för att skapa bok från databasen (med ID).
-     */
-    public Book(int bookID,
-            String ISBN,
-            String title,
-            Date publishedDate) {
-        this.bookID = bookID;
-        this.ISBN = ISBN;
+    // Constructors
+    public Book() {
+        this.authors = new ArrayList<>();
+        this.genres = new ArrayList<>();
+    }
+
+    public Book(int bookId, String isbn, String title, String publishedDate) {
+        this.bookId = bookId;
+        this.isbn = isbn;
         this.title = title;
         this.publishedDate = publishedDate;
         this.authors = new ArrayList<>();
         this.genres = new ArrayList<>();
-        this.averageRating = 0;
-        this.numRatings = 0;
-        this.reviews = new ArrayList<>();
+        this.averageRating = 0.0;
+        this.reviewCount = 0;
     }
 
-    /**
-     * Konstruktor för att skapa ny bok (utan ID).
-     */
-    public Book(String ISBN, String title, Date publishedDate) {
-        this(-1, ISBN, title, publishedDate);
+    // Getters and Setters
+    public int getBookId() {
+        return bookId;
     }
 
-    public int getBookID() {
-        return bookID;
+    public void setBookId(int bookId) {
+        this.bookId = bookId;
     }
 
-    public String getISBN() {
-        return ISBN;
+    public String getIsbn() {
+        return isbn;
+    }
+
+    public void setIsbn(String isbn) {
+        this.isbn = isbn;
     }
 
     public String getTitle() {
         return title;
     }
 
-    public Date getPublishedDate() {
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getPublishedDate() {
         return publishedDate;
     }
 
-    public int getAddedByUserID() {
-        return addedByUserID;
+    public void setPublishedDate(String publishedDate) {
+        this.publishedDate = publishedDate;
     }
 
-    public String getAddedByUsername() {
-        return addedByUsername;
-    }
-
-    /**
-     * Returnerar författarlistan (direkt referens för enkel modifiering).
-     * 
-     * @return lista över författare
-     */
-    public ArrayList<Author> getAuthors() {
+    public List<Author> getAuthors() {
         return authors;
     }
 
-    public ArrayList<Genre> getGenres() {
+    public void setAuthors(List<Author> authors) {
+        this.authors = authors;
+    }
+
+    public void addAuthor(Author author) {
+        if (this.authors == null) {
+            this.authors = new ArrayList<>();
+        }
+        this.authors.add(author);
+    }
+
+    public List<Genre> getGenres() {
         return genres;
     }
 
-    public int getAverageRating() {
-        return averageRating;
-    }
-
-    public int getNumRatings() {
-        return numRatings;
-    }
-
-    public ArrayList<Review> getReviews() {
-        return reviews;
-    }
-
-    public void setBookID(int newID) {
-        this.bookID = newID;
-    }
-
-    public void setISBN(String newISBN) {
-        this.ISBN = newISBN;
-    }
-
-    public void setTitle(String newTitle) {
-        this.title = newTitle;
-    }
-
-    public void setPublishedDate(Date newDate) {
-        this.publishedDate = newDate;
-    }
-
-    public void setAuthors(ArrayList<Author> newAuthors) {
-        this.authors = newAuthors;
-    }
-
-    public void setGenres(ArrayList<Genre> genres) {
+    public void setGenres(List<Genre> genres) {
         this.genres = genres;
     }
 
-    public void setAverageRating(int averageRating) {
+    public void addGenre(Genre genre) {
+        if (this.genres == null) {
+            this.genres = new ArrayList<>();
+        }
+        this.genres.add(genre);
+    }
+
+    public double getAverageRating() {
+        return averageRating;
+    }
+
+    public void setAverageRating(double averageRating) {
         this.averageRating = averageRating;
     }
 
-    public void setNumRatings(int numRatings) {
-        this.numRatings = numRatings;
+    public int getReviewCount() {
+        return reviewCount;
     }
 
-    public void setReviews(ArrayList<Review> newReviews) {
-        this.reviews = newReviews;
+    public void setReviewCount(int reviewCount) {
+        this.reviewCount = reviewCount;
     }
 
-    public void setAddedByUserID(int addedByUserID) {
-        this.addedByUserID = addedByUserID;
-    }
-
-    public void setAddedByUsername(String addedByUsername) {
-        this.addedByUsername = addedByUsername;
-    }
-
-    /**
-     * Lägger till en författare om den inte redan finns (undviker dubbletter).
-     */
-    public void addAuthor(Author author) {
-        boolean exists = false;
-        for (Author existingAuthor : this.authors) {
-            if (existingAuthor.getName().equalsIgnoreCase(author.getName())) {
-                exists = true;
-                break;
-            }
-        }
-        if (!exists) {
-            this.authors.add(author);
-        }
-    }
-
-    /**
-     * Lägger till en genre om den inte redan finns (undviker dubbletter).
-     */
-    public void addGenre(Genre genre) {
-        boolean exists = false;
-        for (Genre existingGenre : this.genres) {
-            if (existingGenre.getGenreName().equalsIgnoreCase(genre.getGenreName())) {
-                exists = true;
-                break;
-            }
-        }
-        if (!exists) {
-            this.genres.add(genre);
-        }
-    }
-
-    /**
-     * Lägger till en recension om den inte redan finns (undviker dubbletter).
-     */
-    public void addReview(Review review) {
-        boolean exists = false;
-        for (Review existingReview : this.reviews) {
-            if (existingReview.getReviewID() == review.getReviewID()) {
-                exists = true;
-                break;
-            }
-        }
-        if (!exists) {
-            this.reviews.add(review);
-        }
-    }
-
-    /**
-     * Returnerar författarnamn som en kommaseparerad sträng för visning i
-     * TableView.
-     */
+    // Helper method to get authors as comma-separated string
     public String getAuthorsAsString() {
-        if (authors.isEmpty()) {
+        if (authors == null || authors.isEmpty()) {
             return "Unknown";
         }
         StringBuilder sb = new StringBuilder();
@@ -207,11 +129,9 @@ public class Book {
         return sb.toString();
     }
 
-    /**
-     * Returnerar genrenamn som en kommaseparerad sträng för visning i TableView.
-     */
+    // Helper method to get genres as comma-separated string
     public String getGenresAsString() {
-        if (genres.isEmpty()) {
+        if (genres == null || genres.isEmpty()) {
             return "Unknown";
         }
         StringBuilder sb = new StringBuilder();
@@ -224,72 +144,22 @@ public class Book {
         return sb.toString();
     }
 
-    /**
-     * Returnerar recensioner som formaterad sträng (begränsad till 50 tecken per
-     * recension).
-     */
-    public String getReviewsAsString() {
-        if (reviews.isEmpty()) {
-            return "No reviews yet";
-        }
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < reviews.size(); i++) {
-            Review r = reviews.get(i);
-            sb.append(r.getReviewDate()).append(": ");
-            sb.append(r.getReviewText().substring(0, Math.min(50, r.getReviewText().length())));
-            if (r.getReviewText().length() > 50) {
-                sb.append("...");
-            }
-            if (i < reviews.size() - 1) {
-                sb.append("\n");
-            }
-        }
-        return sb.toString();
-    }
-
-    /**
-     * Returnerar utgivningsåret som sträng.
-     */
-    public String getPublishedYear() {
-        if (publishedDate == null) {
-            return "N/A";
-        }
-        return String.valueOf(publishedDate.toLocalDate().getYear());
-    }
-
-    /**
-     * Returnerar antalet recensioner för denna bok.
-     */
-    public int getNumReviews() {
-        return reviews.size();
-    }
-
-    // Object-metoder (equals, hashCode, toString)
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null || getClass() != obj.getClass()) {
-            return false;
-        }
-        Book book = (Book) obj;
-        return bookID == book.bookID;
-    }
-
-    public int hashCode() {
-        return Objects.hash(bookID);
-    }
-
+    @Override
     public String toString() {
-        return "Book{" +
-                "bookID=" + bookID +
-                ", ISBN='" + ISBN + '\'' +
-                ", title='" + title + '\'' +
-                ", avgRating=" + averageRating +
-                ", numRatings=" + numRatings +
-                ", numReviews=" + reviews.size() +
-                ", authors=" + authors.size() +
-                ", genres=" + genres.size() +
-                '}';
+        return title + " by " + getAuthorsAsString() +
+                " (Rating: " + String.format("%.1f", averageRating) + ")";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Book book = (Book) o;
+        return bookId == book.bookId;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(bookId);
     }
 }

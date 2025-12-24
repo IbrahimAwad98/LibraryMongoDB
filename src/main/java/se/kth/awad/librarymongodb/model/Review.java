@@ -1,58 +1,105 @@
 package se.kth.awad.librarymongodb.model;
 
-import java.time.LocalDate;
+import java.util.Objects;
 
+/**
+ * I MongoDB lagras detta i en separat REVIEWS-samling.
+ */
 public class Review {
-    private int reviewID;
-    private int bookID;
-    private User user;
+    private int reviewId;
+    private int bookId;
+    private int userId;
+    private String username;
+    private int rating;
     private String reviewText;
-    private LocalDate reviewDate;
+    private String reviewDate;
 
-    public Review(int reviewID, int bookID, User user,
-            String reviewText, LocalDate reviewDate) {
-        this.reviewID = reviewID;
-        this.bookID = bookID;
-        this.user = user;
+    // Constructors
+    public Review() {
+    }
+
+    public Review(int reviewId, int bookId, int userId, String username,
+                  int rating, String reviewText, String reviewDate) {
+        this.reviewId = reviewId;
+        this.bookId = bookId;
+        this.userId = userId;
+        this.username = username;
+        this.rating = rating;
         this.reviewText = reviewText;
         this.reviewDate = reviewDate;
     }
 
-    public Review(int bookID, User user, String reviewText, LocalDate reviewDate) {
-        this(-1, bookID, user, reviewText, reviewDate);
+    public int getReviewId() {
+        return reviewId;
     }
 
-    public Review(int bookID, User user, String reviewText) {
-        this(-1, bookID, user, reviewText, LocalDate.now());
+    public void setReviewId(int reviewId) {
+        this.reviewId = reviewId;
     }
 
-    public int getReviewID() {
-        return reviewID;
+    public int getBookId() {
+        return bookId;
     }
 
-    public int getBookID() {
-        return bookID;
+    public void setBookId(int bookId) {
+        this.bookId = bookId;
     }
 
-    public User getUser() {
-        return user;
+    public int getUserId() {
+        return userId;
+    }
+
+    public void setUserId(int userId) {
+        this.userId = userId;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public int getRating() {
+        return rating;
+    }
+
+    public void setRating(int rating) {
+        this.rating = rating;
     }
 
     public String getReviewText() {
         return reviewText;
     }
 
-    public LocalDate getReviewDate() {
+    public void setReviewText(String reviewText) {
+        this.reviewText = reviewText;
+    }
+
+    public String getReviewDate() {
         return reviewDate;
     }
 
-    public void setReviewID(int reviewID) {
-        this.reviewID = reviewID;
+    public void setReviewDate(String reviewDate) {
+        this.reviewDate = reviewDate;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Review review = (Review) o;
+        return reviewId == review.reviewId;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(reviewId);
     }
 
     @Override
     public String toString() {
-        return reviewText + "\n" + "- " + user.getUsername() + ", " + reviewDate;
+        return username + " - Rating: " + rating + "/10";
     }
-
 }

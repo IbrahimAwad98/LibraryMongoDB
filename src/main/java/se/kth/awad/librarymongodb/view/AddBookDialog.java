@@ -12,7 +12,6 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.util.Callback;
 import se.kth.awad.librarymongodb.model.*;
-import java.sql.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -71,8 +70,8 @@ public class AddBookDialog extends Dialog<Book> {
                     setText(null);
                 } else {
                     String text = author.getName();
-                    if (author.getBirthDate() != null) {
-                        text += " (" + author.getBirthDate().toLocalDate().getYear() + ")";
+                    if (author.getBirthDate() != null && !author.getBirthDate().isEmpty()) {
+                        text += " (" + author.getBirthDate() + ")";
                     }
                     setText(text);
                 }
@@ -104,13 +103,13 @@ public class AddBookDialog extends Dialog<Book> {
                 Book result = null;
                 if (b == buttonTypeOk) {
                     if (isValidData()) {
-                        Date publishedDate = publishedField.getValue() != null
-                                ? Date.valueOf(publishedField.getValue())
-                                : null;
-                        result = new Book(
-                                isbnField.getText().trim(),
-                                titleField.getText().trim(),
-                                publishedDate);
+                        String publishedDate = publishedField.getValue() != null
+                                ? publishedField.getValue().toString()
+                                : "";
+                        result = new Book();
+                        result.setIsbn(isbnField.getText().trim());
+                        result.setTitle(titleField.getText().trim());
+                        result.setPublishedDate(publishedDate);
 
                         ObservableList<Author> selectedAuthors = authorListView.getSelectionModel().getSelectedItems();
                         for (Author author : selectedAuthors) {
@@ -124,7 +123,9 @@ public class AddBookDialog extends Dialog<Book> {
                             for (String genreName : genreNames) {
                                 genreName = genreName.trim();
                                 if (!genreName.isEmpty()) {
-                                    result.addGenre(new Genre(genreName));
+                                    Genre genre = new Genre();
+                                    genre.setGenreName(genreName);
+                                    result.addGenre(genre);
                                 }
                             }
                         }
@@ -206,10 +207,13 @@ public class AddBookDialog extends Dialog<Book> {
                 if (name.isEmpty()) {
                     return null;
                 }
-                Date birthDate = birthDatePicker.getValue() != null
-                        ? Date.valueOf(birthDatePicker.getValue())
+                String birthDate = birthDatePicker.getValue() != null
+                        ? birthDatePicker.getValue().toString()
                         : null;
-                return new Author(name, birthDate);
+                Author author = new Author();
+                author.setName(name);
+                author.setBirthDate(birthDate);
+                return author;
             }
             return null;
         });
@@ -219,7 +223,8 @@ public class AddBookDialog extends Dialog<Book> {
             Task<Author> addTask = new Task<Author>() {
                 @Override
                 protected Author call() throws Exception {
-                    booksDb.insertAuthorAsUser(author, currentUser.getUserID());
+                    // Author will be added when book is saved
+                    // For now, just return the author
                     return author;
                 }
             };

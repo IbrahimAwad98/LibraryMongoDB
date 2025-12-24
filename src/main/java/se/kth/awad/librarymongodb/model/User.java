@@ -6,6 +6,8 @@ public class User {
     private int userID;
     private String username;
 
+    public User(){}
+
     public User(int userID, String username) {
         this.userID = userID;
         this.username = username;
@@ -21,6 +23,10 @@ public class User {
 
     public void setUserID(int userID) {
         this.userID = userID;
+    }
+
+    public void setUsername(String username){
+        this.username = this.username;
     }
 
     public boolean equals(Object obj) {

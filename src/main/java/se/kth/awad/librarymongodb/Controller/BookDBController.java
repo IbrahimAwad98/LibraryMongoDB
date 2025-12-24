@@ -34,7 +34,7 @@ public class BookDBController {
             if (isConnected) {
                 List<Book> books = new ArrayList<>();
                 try {
-                    books = booksDb.retrieveBookTable();
+                    books = booksDb.getAllBooks();
                     booksView.displayBooks(books);
                     booksView.showAlertAndWait("Successfully connected to database 'LibraryDB'", CONFIRMATION);
                 } catch (Exception e) {
@@ -51,9 +51,9 @@ public class BookDBController {
             booksView.showAlertAndWait(
                     "Connection failed!\n\n" + errorDetails +
                             "\n\nPlease check:\n" +
-                            "1. MySQL server is running\n" +
-                            "2. Database 'LibraryDB' exists\n" +
-                            "3. User has proper permissions",
+                            "1. MongoDB server is running\n" +
+                            "2. Database 'library' exists\n" +
+                            "3. User credentials are correct",
                     ERROR);
         }
     }
@@ -64,13 +64,9 @@ public class BookDBController {
     public void disconnect() {
         List<Book> books = new ArrayList<>();
         try {
-            boolean isDisconnected = booksDb.disconnect();
-            if (isDisconnected) {
-                booksView.showAlertAndWait("Successfully disconnected from database", INFORMATION);
-                booksView.displayBooks(books);
-            } else {
-                booksView.showAlertAndWait("Not connected to any database", WARNING);
-            }
+            booksDb.disconnect();
+            booksView.showAlertAndWait("Successfully disconnected from database", INFORMATION);
+            booksView.displayBooks(books);
         } catch (Exception e) {
             booksView.showAlertAndWait("Error disconnecting: " + e.getMessage(), ERROR);
             e.printStackTrace();
@@ -140,19 +136,7 @@ public class BookDBController {
         Task<Void> task = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
-                List<Integer> authorIDs = new ArrayList<>();
-                if (book.getAuthors() != null) {
-                    for (Author author : book.getAuthors()) {
-                        authorIDs.add(author.getAuthorID());
-                    }
-                }
-                List<String> genreNames = new ArrayList<>();
-                if (book.getGenres() != null) {
-                    for (Genre genre : book.getGenres()) {
-                        genreNames.add(genre.getGenreName());
-                    }
-                }
-                booksDb.insertBookAsUser(book, authorIDs, genreNames, currentUser.getUserID());
+                booksDb.addBook(book);
                 return null;
             }
         };
@@ -203,7 +187,7 @@ public class BookDBController {
                     throw new BooksDbException("No book found with title: " + title);
                 }
                 Book book = books.get(0);
-                booksDb.deleteBook(book);
+                booksDb.deleteBook(book.getBookId());
                 return null;
             }
         };
@@ -261,12 +245,16 @@ public class BookDBController {
                 }
                 Book book = books.get(0);
 
-                // Kolla om användaren redan betygsatt
-                if (booksDb.hasUserRatedBook(book.getBookID(), currentUser.getUserID())) {
-                    throw new BooksDbException(
-                            "You have already rated this book! You can only give one rating per book.");
-                }
-                booksDb.rateBookAsUser(book.getBookID(), currentUser.getUserID(), newGrade);
+                // Skapa review med rating
+                Review review = new Review();
+                review.setBookId(book.getBookId());
+                review.setUserId(currentUser.getUserID());
+                review.setUsername(currentUser.getUsername());
+                review.setRating(newGrade);
+                review.setReviewText(""); // Rating only, no text
+                review.setReviewDate(java.time.LocalDate.now().toString());
+                
+                booksDb.addReview(review);
 
                 return null;
             }
@@ -306,7 +294,7 @@ public class BookDBController {
      * Hjälpmetod för att ladda om alla böcker från databasen.
      */
     private void refreshBookList() throws BooksDbException {
-        List<Book> books = booksDb.retrieveBookTable();
+        List<Book> books = booksDb.getAllBooks();
         booksView.displayBooks(books);
     }
 
@@ -379,7 +367,16 @@ public class BookDBController {
                 }
 
                 Book book = books.get(0);
-                booksDb.addReview(book.getBookID(), currentUser.getUserID(), reviewText);
+                
+                Review review = new Review();
+                review.setBookId(book.getBookId());
+                review.setUserId(currentUser.getUserID());
+                review.setUsername(currentUser.getUsername());
+                review.setRating(0); // No rating, just review text
+                review.setReviewText(reviewText);
+                review.setReviewDate(java.time.LocalDate.now().toString());
+                
+                booksDb.addReview(review);
                 return null;
             }
         };
@@ -415,8 +412,9 @@ public class BookDBController {
         Task<DetailsData> task = new Task<DetailsData>() {
             @Override
             protected DetailsData call() throws Exception {
-                List<Review> reviews = booksDb.getReviewsForBook(book.getBookID());
-                List<Author> authors = booksDb.getAuthorsForBook(book.getBookID());
+                List<Review> reviews = booksDb.getReviewsForBook(book.getBookId());
+                // Authors are already in the book object
+                List<Author> authors = book.getAuthors();
                 return new DetailsData(reviews, authors);
             }
         };
@@ -428,15 +426,6 @@ public class BookDBController {
 
             StringBuilder content = new StringBuilder();
 
-            content.append("ADDED BY:\n");
-            if (book.getAddedByUsername() != null) {
-                content.append(book.getAddedByUsername());
-            } else if (book.getAddedByUserID() > 0) {
-                content.append("User ID: ").append(book.getAddedByUserID());
-            } else {
-                content.append("Unknown user");
-            }
-            content.append("\n\n");
 
             content.append("AUTHORS:\n");
             if (authors.isEmpty()) {
@@ -461,9 +450,14 @@ public class BookDBController {
             } else {
                 for (Review review : reviews) {
                     content.append("─────────────────────\n");
-                    content.append(review.getUser().getUsername());
+                    content.append(review.getUsername());
+                    if (review.getRating() > 0) {
+                        content.append(" - Rating: ").append(review.getRating()).append("/10");
+                    }
                     content.append(" (").append(review.getReviewDate()).append("):\n");
-                    content.append(review.getReviewText());
+                    if (review.getReviewText() != null && !review.getReviewText().isEmpty()) {
+                        content.append(review.getReviewText());
+                    }
                     content.append("\n\n");
                 }
             }

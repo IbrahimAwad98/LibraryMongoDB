@@ -91,15 +91,15 @@ public class LoginDialog extends Dialog<User> {
         }
 
         try {
-            // Försök logga in
-            User user = booksDb.login(username, password);
+            // Försök hämta användare (enkel inloggning utan lösenordskontroll i MongoDB)
+            User user = booksDb.getUserByUsername(username);
 
             // Lyckad inloggning!
             setResult(user);
             close();
 
         } catch (BooksDbException ex) {
-            showError(ex.getMessage());
+            showError("Invalid username or user not found");
         }
     }
 
@@ -126,10 +126,12 @@ public class LoginDialog extends Dialog<User> {
 
         try {
             // Skapa nytt konto
-            booksDb.createUser(username, password);
+            User newUser = new User();
+            newUser.setUsername(username);
+            booksDb.addUser(newUser);
 
             // Logga in automatiskt efter registrering
-            User user = booksDb.login(username, password);
+            User user = booksDb.getUserByUsername(username);
 
             // Visa bekräftelse
             showSuccess("Account created! You are now logged in as " + username);

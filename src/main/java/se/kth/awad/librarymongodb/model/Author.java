@@ -1,38 +1,32 @@
 package se.kth.awad.librarymongodb.model;
 
-import java.sql.Date;
 import java.util.Objects;
 
 /**
- * Representerar en författare från T_Author-tabellen i LibraryDB.
+ * Representerar en författare i bibliotekssystemet.
+ * I MongoDB lagras detta som ett underdokument inom bokdokument.
  */
 public class Author {
     private int authorID;
     private String name;
-    private Date birthDate;
+    private String birthDate;
+
+
+    public Author(){}
 
     /**
      * Konstruktor för att skapa författare från databasen (med ID).
      */
-    public Author(int authorID, String name, Date birthDate) {
+    public Author(int authorID, String name, String birthDate) {
         this.authorID = authorID;
         this.name = name;
         this.birthDate = birthDate;
     }
 
-    /**
-     * Konstruktor för att skapa ny författare (utan ID).
-     */
-    public Author(String name, Date birthDate) {
-        this(-1, name, birthDate);
+    public Author(int authorID, String name){
+        this(authorID,name,null);
     }
 
-    /**
-     * Konstruktor för att skapa författare med endast namn (för visning).
-     */
-    public Author(String authorName) {
-        this(-1, authorName, null);
-    }
 
     public int getAuthorID() {
         return authorID;
@@ -42,7 +36,7 @@ public class Author {
         return name;
     }
 
-    public Date getBirthDate() {
+    public String getBirthDate() {
         return birthDate;
     }
 
@@ -54,19 +48,10 @@ public class Author {
         this.name = name;
     }
 
-    public void setBirthDate(Date birthDate) {
+    public void setBirthDate(String birthDate) {
         this.birthDate = birthDate;
     }
 
-    /**
-     * Returnerar födelseåret som sträng.
-     */
-    public String getBirthYear() {
-        if (birthDate == null) {
-            return "N/A";
-        }
-        return String.valueOf(birthDate.toLocalDate().getYear());
-    }
 
     @Override
     public boolean equals(Object o) {

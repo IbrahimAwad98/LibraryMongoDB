@@ -3,20 +3,18 @@ package se.kth.awad.librarymongodb.model;
 import java.util.Objects;
 
 /**
- * Representerar en genre från T_Genre tabellen i LibraryDB.
+ * I MongoDB lagras detta som ett underdokument inom bokdokument.
  */
 public class Genre {
     private int genreID;
     private String genreName;
 
+    public Genre(){}
+
     // Konstruktor för att läsa från databasen (med ID).
     public Genre(int genreID, String name) {
         this.genreID = genreID;
         this.genreName = name;
-    }
-
-    public Genre(String genreName) {
-        this(-1, genreName); // inget id än
     }
 
     public int getGenreID() {

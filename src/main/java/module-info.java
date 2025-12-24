@@ -4,8 +4,6 @@ module se.kth.awad.librarymongodb {
     requires org.mongodb.driver.core;
     requires org.mongodb.driver.sync.client;
     requires org.mongodb.bson;
-    requires java.sql;
-
 
     opens se.kth.awad.librarymongodb to javafx.fxml;
     opens se.kth.awad.librarymongodb.view to javafx.fxml;

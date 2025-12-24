@@ -1,6 +1,5 @@
 package se.kth.awad.librarymongodb.view;
 
-import java.sql.Date;
 import java.util.List;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -89,20 +88,18 @@ public class BooksPane extends VBox {
 
         TableColumn<Book, String> titleCol = new TableColumn<>("Title");
         TableColumn<Book, String> isbnCol = new TableColumn<>("ISBN");
-        TableColumn<Book, Date> publishedCol = new TableColumn<>("Published");
+        TableColumn<Book, String> publishedCol = new TableColumn<>("Published");
         TableColumn<Book, String> genreCol = new TableColumn<>("Genre");
         TableColumn<Book, Integer> ratingCol = new TableColumn<>("Rating");
-        TableColumn<Book, Integer> authorsCol = new TableColumn<>("Authors");
-        TableColumn<Book, String> addedByCol = new TableColumn<>("Added By");
+        TableColumn<Book, String> authorsCol = new TableColumn<>("Authors");
 
-        booksTable.getColumns().addAll(titleCol, isbnCol, publishedCol, genreCol, ratingCol, authorsCol, addedByCol);
+        booksTable.getColumns().addAll(titleCol, isbnCol, publishedCol, genreCol, ratingCol, authorsCol);
         titleCol.prefWidthProperty().bind(booksTable.widthProperty().multiply(0.25));
         isbnCol.prefWidthProperty().bind(booksTable.widthProperty().multiply(0.20));
         publishedCol.prefWidthProperty().bind(booksTable.widthProperty().multiply(0.15));
         genreCol.prefWidthProperty().bind(booksTable.widthProperty().multiply(0.15));
         ratingCol.prefWidthProperty().bind(booksTable.widthProperty().multiply(0.10));
         authorsCol.prefWidthProperty().bind(booksTable.widthProperty().multiply(0.15));
-        addedByCol.prefWidthProperty().bind(booksTable.widthProperty().multiply(0.14));
         isbnCol.setMinWidth(140);
         ratingCol.setMinWidth(70);
 
@@ -110,9 +107,11 @@ public class BooksPane extends VBox {
         isbnCol.setCellValueFactory(new PropertyValueFactory<>("ISBN"));
         publishedCol.setCellValueFactory(new PropertyValueFactory<>("publishedDate"));
         genreCol.setCellValueFactory(new PropertyValueFactory<>("genresAsString"));
-        ratingCol.setCellValueFactory(new PropertyValueFactory<>("averageRating"));
+        ratingCol.setCellValueFactory(cellData -> {
+            Book book = cellData.getValue();
+            return new javafx.beans.property.SimpleObjectProperty<>((int) Math.round(book.getAverageRating()));
+        });
         authorsCol.setCellValueFactory(new PropertyValueFactory<>("authorsAsString"));
-        addedByCol.setCellValueFactory(new PropertyValueFactory<>("addedByUsername"));
 
         ratingCol.setCellFactory(column -> new TableCell<Book, Integer>() {
             @Override
