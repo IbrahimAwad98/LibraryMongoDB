@@ -104,7 +104,7 @@ public class BooksPane extends VBox {
         ratingCol.setMinWidth(70);
 
         titleCol.setCellValueFactory(new PropertyValueFactory<>("title"));
-        isbnCol.setCellValueFactory(new PropertyValueFactory<>("ISBN"));
+        isbnCol.setCellValueFactory(new PropertyValueFactory<>("isbn"));
         publishedCol.setCellValueFactory(new PropertyValueFactory<>("publishedDate"));
         genreCol.setCellValueFactory(new PropertyValueFactory<>("genresAsString"));
         ratingCol.setCellValueFactory(cellData -> {

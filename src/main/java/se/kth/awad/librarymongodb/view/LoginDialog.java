@@ -21,8 +21,8 @@ public class LoginDialog extends Dialog<User> {
     public LoginDialog(BooksDbInterface booksDb) {
         this.booksDb = booksDb;
 
-        setTitle("Log in");
-        setHeaderText("Log in or create new account");
+        setTitle("Login");
+        setHeaderText("Login or create new account");
 
         usernameField = new TextField();
         usernameField.setPromptText("Username");
@@ -99,7 +99,7 @@ public class LoginDialog extends Dialog<User> {
             close();
 
         } catch (BooksDbException ex) {
-            showError("Invalid username or user not found");
+            showError(ex.getMessage());
         }
     }
 
