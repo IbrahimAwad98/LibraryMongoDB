@@ -187,7 +187,7 @@ public class BookDBController {
                     throw new BooksDbException("No book found with title: " + title);
                 }
                 Book book = books.get(0);
-                booksDb.deleteBook(book.getBookId());
+                booksDb.deleteBook(book);
                 return null;
             }
         };

@@ -217,16 +217,18 @@ public class BooksDbMongo implements BooksDbInterface {
     }
 
     @Override
-    public void deleteBook(int bookId) throws BooksDbException {
+    public void deleteBook(Book book) throws BooksDbException {
         checkConnection();
         try {
             MongoCollection<Document> collection = database.getCollection(BOOKS_COLLECTION);
-            Bson filter = Filters.eq("bookId", bookId);
+            Bson filter = Filters.eq("book_id", book.getBookId());
 
             DeleteResult result = collection.deleteOne(filter);
             if (result.getDeletedCount() == 0) {
-                throw new BooksDbException("No book found with ID: " + bookId);
+                throw new BooksDbException("No book found with ID: " + book.getBookId());
             }
+
+            System.out.println("Book deleted successfully!");
         } catch (Exception e) {
             throw new BooksDbException("Error deleting book: " + e.getMessage(), e);
         }

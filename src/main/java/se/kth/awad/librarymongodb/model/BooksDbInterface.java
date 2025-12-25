@@ -24,7 +24,7 @@ public interface BooksDbInterface {
     void createBook(Book book) throws BooksDbException;
     Book readBook(int bookId) throws BooksDbException;
     void updateBook(Book book) throws BooksDbException;
-    void deleteBook(int bookId) throws BooksDbException;
+    void deleteBook(Book book) throws BooksDbException;
 
     // Review operations
     void addReview(Review review) throws BooksDbException;
