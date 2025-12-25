@@ -228,7 +228,6 @@ public class BooksDbMongo implements BooksDbInterface {
                 throw new BooksDbException("No book found with ID: " + book.getBookId());
             }
 
-            System.out.println("Book deleted successfully!");
         } catch (Exception e) {
             throw new BooksDbException("Error deleting book: " + e.getMessage(), e);
         }
@@ -417,7 +416,7 @@ public class BooksDbMongo implements BooksDbInterface {
     private void updateBookAverageRating(int bookId) throws BooksDbException {
         try {
             MongoCollection<Document> reviewsCollection = database.getCollection(REVIEWS_COLLECTION);
-            Bson filter = Filters.eq("bookId", bookId);
+            Bson filter = Filters.eq("book_id", bookId);
 
             List<Document> reviews = reviewsCollection.find(filter).into(new ArrayList<>());
             if (reviews.isEmpty()) {
@@ -431,10 +430,10 @@ public class BooksDbMongo implements BooksDbInterface {
             double average = sum / reviews.size();
 
             MongoCollection<Document> booksCollection = database.getCollection(BOOKS_COLLECTION);
-            Bson bookFilter = Filters.eq("bookId", bookId);
+            Bson bookFilter = Filters.eq("book_id", bookId);
             Bson update = Updates.combine(
-                    Updates.set("averageRating", average),
-                    Updates.set("reviewCount", reviews.size())
+                    Updates.set("average_rating", average),
+                    Updates.set("rating_count", reviews.size())
             );
             booksCollection.updateOne(bookFilter, update);
         } catch (Exception e) {
