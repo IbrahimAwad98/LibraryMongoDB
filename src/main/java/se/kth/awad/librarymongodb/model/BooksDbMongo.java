@@ -147,7 +147,7 @@ public class BooksDbMongo implements BooksDbInterface {
             MongoCollection<Document> collection = database.getCollection(BOOKS_COLLECTION);
 
             //Regex search
-            Bson filter = Filters.regex("genres.genreName", genre, "i");
+            Bson filter = Filters.regex("genres.name", genre, "i");
 
             for (Document doc : collection.find(filter)) {
                 books.add(documentToBook(doc));
@@ -166,7 +166,7 @@ public class BooksDbMongo implements BooksDbInterface {
             MongoCollection<Document> collection = database.getCollection(BOOKS_COLLECTION);
 
             //Greater than or equal
-            Bson filter = Filters.gte("averageRating", rating);
+            Bson filter = Filters.gte("average_rating", rating);
 
             for (Document doc : collection.find(filter)) {
                 Book book = documentToBook(doc);
