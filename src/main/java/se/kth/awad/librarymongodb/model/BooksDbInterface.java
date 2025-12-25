@@ -8,11 +8,11 @@ import java.util.List;
  */
 public interface BooksDbInterface {
 
-    // Connection management
+    // Anslutning
     boolean connect(String database) throws BooksDbException;
     void disconnect() throws BooksDbException;
 
-    // Boksökningsoperationer
+    // Sökning (READ operations)
     List<Book> getAllBooks() throws BooksDbException;
     List<Book> searchBooksByTitle(String title) throws BooksDbException;
     List<Book> searchBooksByISBN(String isbn) throws BooksDbException;
@@ -20,11 +20,11 @@ public interface BooksDbInterface {
     List<Book> searchBooksByGenre(String genre) throws BooksDbException;
     List<Book> searchBooksByRating(int rating) throws BooksDbException;
 
-    // Book CRUD operations
-    void addBook(Book book) throws BooksDbException;
+    // CRUD för böcker
+    void createBook(Book book) throws BooksDbException;
+    Book readBook(int bookId) throws BooksDbException;
     void updateBook(Book book) throws BooksDbException;
     void deleteBook(int bookId) throws BooksDbException;
-    Book getBookById(int bookId) throws BooksDbException;
 
     // Review operations
     void addReview(Review review) throws BooksDbException;

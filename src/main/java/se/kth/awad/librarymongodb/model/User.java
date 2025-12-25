@@ -2,6 +2,9 @@ package se.kth.awad.librarymongodb.model;
 
 import java.util.Objects;
 
+/*
+* Representerar en användare
+ */
 public class User {
     private int userID;
     private String username;
@@ -13,21 +16,13 @@ public class User {
         this.username = username;
     }
 
-    public int getUserID() {
-        return userID;
-    }
+    //getters
+    public int getUserID() {return userID;}
+    public String getUsername() {return username;}
 
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUserID(int userID) {
-        this.userID = userID;
-    }
-
-    public void setUsername(String username){
-        this.username = this.username;
-    }
+    //setters
+    public void setUserID(int userID) {this.userID = userID;}
+    public void setUsername(String username){this.username = this.username;}
 
     public boolean equals(Object obj) {
         if (this == obj) {

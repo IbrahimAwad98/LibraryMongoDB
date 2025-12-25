@@ -5,8 +5,9 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Represents a book in the library system.
- * In MongoDB, authors and genres are stored as subdocuments within the Book document.
+ * Representerar en bok i biblioteket
+ * där authors, genres är subdokument i den här dokument (bok klass).
+ * obs: de ska vara lista eftersom många till många.
  */
 public class Book {
     private int bookId;
@@ -18,12 +19,13 @@ public class Book {
     private double averageRating;
     private int reviewCount;
 
-    // Constructors
+    // för mongoDb ska konvertera document till ett bok-objekt
     public Book() {
         this.authors = new ArrayList<>();
         this.genres = new ArrayList<>();
     }
 
+    // löser från databas
     public Book(int bookId, String isbn, String title, String publishedDate) {
         this.bookId = bookId;
         this.isbn = isbn;
@@ -35,47 +37,59 @@ public class Book {
         this.reviewCount = 0;
     }
 
-    // Getters and Setters
+    //getters
     public int getBookId() {
         return bookId;
     }
-
-    public void setBookId(int bookId) {
-        this.bookId = bookId;
-    }
-
     public String getIsbn() {
         return isbn;
     }
-
-    public void setIsbn(String isbn) {
-        this.isbn = isbn;
-    }
-
     public String getTitle() {
         return title;
     }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
     public String getPublishedDate() {
         return publishedDate;
     }
-
-    public void setPublishedDate(String publishedDate) {
-        this.publishedDate = publishedDate;
-    }
-
     public List<Author> getAuthors() {
         return authors;
     }
+    public List<Genre> getGenres() {
+        return genres;
+    }
+    public double getAverageRating() {
+        return averageRating;
+    }
+    public int getReviewCount() {
+        return reviewCount;
+    }
 
+    //setters
+    public void setBookId(int bookId) {
+        this.bookId = bookId;
+    }
+    public void setIsbn(String isbn) {
+        this.isbn = isbn;
+    }
+    public void setTitle(String title) {
+        this.title = title;
+    }
+    public void setPublishedDate(String publishedDate) {
+        this.publishedDate = publishedDate;
+    }
     public void setAuthors(List<Author> authors) {
         this.authors = authors;
     }
+    public void setGenres(List<Genre> genres) {
+        this.genres = genres;
+    }
+    public void setAverageRating(double averageRating) {
+        this.averageRating = averageRating;
+    }
+    public void setReviewCount(int reviewCount) {
+        this.reviewCount = reviewCount;
+    }
 
+    // lägger till författare i listan
     public void addAuthor(Author author) {
         if (this.authors == null) {
             this.authors = new ArrayList<>();
@@ -83,14 +97,7 @@ public class Book {
         this.authors.add(author);
     }
 
-    public List<Genre> getGenres() {
-        return genres;
-    }
-
-    public void setGenres(List<Genre> genres) {
-        this.genres = genres;
-    }
-
+    // lägger till genre i listan
     public void addGenre(Genre genre) {
         if (this.genres == null) {
             this.genres = new ArrayList<>();
@@ -98,23 +105,7 @@ public class Book {
         this.genres.add(genre);
     }
 
-    public double getAverageRating() {
-        return averageRating;
-    }
-
-    public void setAverageRating(double averageRating) {
-        this.averageRating = averageRating;
-    }
-
-    public int getReviewCount() {
-        return reviewCount;
-    }
-
-    public void setReviewCount(int reviewCount) {
-        this.reviewCount = reviewCount;
-    }
-
-    // Helper method to get authors as comma-separated string
+    //Rreturnerar alla författare som en sträng för GUI
     public String getAuthorsAsString() {
         if (authors == null || authors.isEmpty()) {
             return "Unknown";
@@ -129,7 +120,7 @@ public class Book {
         return sb.toString();
     }
 
-    // Helper method to get genres as comma-separated string
+    // Returnerar alla genre som en sträng för GUI
     public String getGenresAsString() {
         if (genres == null || genres.isEmpty()) {
             return "Unknown";
@@ -145,12 +136,6 @@ public class Book {
     }
 
     @Override
-    public String toString() {
-        return title + " by " + getAuthorsAsString() +
-                " (Rating: " + String.format("%.1f", averageRating) + ")";
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -161,5 +146,11 @@ public class Book {
     @Override
     public int hashCode() {
         return Objects.hash(bookId);
+    }
+
+    @Override
+    public String toString() {
+        return title + " by " + getAuthorsAsString() +
+                " (Rating: " + String.format("%.1f", averageRating) + ")";
     }
 }

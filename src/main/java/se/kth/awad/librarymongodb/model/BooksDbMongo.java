@@ -7,6 +7,8 @@ import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.IndexOptions;
+import com.mongodb.client.model.Indexes;
 import com.mongodb.client.model.Updates;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
@@ -32,6 +34,7 @@ public class BooksDbMongo implements BooksDbInterface {
     private static final String USERS_COLLECTION = "USERS";
     private static final String COUNTERS_COLLECTION = "COUNTERS";
 
+
     @Override
     public boolean connect(String databaseName) throws BooksDbException {
         try {
@@ -39,12 +42,12 @@ public class BooksDbMongo implements BooksDbInterface {
             MongoClientSettings settings = MongoClientSettings.builder()
                     .applyConnectionString(connectionString)
                     .build();
-
             mongoClient = MongoClients.create(settings);
             database = mongoClient.getDatabase(DATABASE_NAME);
 
-            // Test connection
-            database.listCollectionNames().first();
+            database.listCollectionNames().first(); //lista alla collections och visa första (bok)
+
+            createIndexes(); //skapa index här
             return true;
         } catch (Exception e) {
             throw new BooksDbException("Failed to connect to MongoDB: " + e.getMessage(), e);
@@ -55,7 +58,7 @@ public class BooksDbMongo implements BooksDbInterface {
     public void disconnect() throws BooksDbException {
         try {
             if (mongoClient != null) {
-                mongoClient.close();
+                mongoClient.close(); //stäng anslutning
                 mongoClient = null;
                 database = null;
             }
@@ -70,8 +73,8 @@ public class BooksDbMongo implements BooksDbInterface {
         List<Book> books = new ArrayList<>();
         try {
             MongoCollection<Document> collection = database.getCollection(BOOKS_COLLECTION);
-            for (Document doc : collection.find()) {
-                books.add(documentToBook(doc));
+            for (Document doc : collection.find()) { //returnera dokument (ingen filter)
+                books.add(documentToBook(doc)); //konvertera dokument till javabok
             }
         } catch (Exception e) {
             throw new BooksDbException("Error getting all books: " + e.getMessage(), e);
@@ -85,8 +88,9 @@ public class BooksDbMongo implements BooksDbInterface {
         List<Book> books = new ArrayList<>();
         try {
             MongoCollection<Document> collection = database.getCollection(BOOKS_COLLECTION);
-            Pattern pattern = Pattern.compile(title, Pattern.CASE_INSENSITIVE);
-            Bson filter = Filters.regex("title", pattern);
+
+            //anväder indexering istället än regex
+            Bson filter = Filters.text(title);
 
             for (Document doc : collection.find(filter)) {
                 books.add(documentToBook(doc));
@@ -103,6 +107,8 @@ public class BooksDbMongo implements BooksDbInterface {
         List<Book> books = new ArrayList<>();
         try {
             MongoCollection<Document> collection = database.getCollection(BOOKS_COLLECTION);
+
+            //med hjälp av indexering
             Bson filter = Filters.eq("ISBN", isbn);
 
             for (Document doc : collection.find(filter)) {
@@ -120,8 +126,9 @@ public class BooksDbMongo implements BooksDbInterface {
         List<Book> books = new ArrayList<>();
         try {
             MongoCollection<Document> collection = database.getCollection(BOOKS_COLLECTION);
-            Pattern pattern = Pattern.compile(author, Pattern.CASE_INSENSITIVE);
-            Bson filter = Filters.regex("authors.name", pattern);
+
+            // Regex search
+            Bson filter = Filters.regex("authors.name", author, "i");
 
             for (Document doc : collection.find(filter)) {
                 books.add(documentToBook(doc));
@@ -138,8 +145,9 @@ public class BooksDbMongo implements BooksDbInterface {
         List<Book> books = new ArrayList<>();
         try {
             MongoCollection<Document> collection = database.getCollection(BOOKS_COLLECTION);
-            Pattern pattern = Pattern.compile(genre, Pattern.CASE_INSENSITIVE);
-            Bson filter = Filters.regex("genres.genreName", pattern);
+
+            //Regex search
+            Bson filter = Filters.regex("genres.genreName", genre, "i");
 
             for (Document doc : collection.find(filter)) {
                 books.add(documentToBook(doc));
@@ -156,8 +164,9 @@ public class BooksDbMongo implements BooksDbInterface {
         List<Book> books = new ArrayList<>();
         try {
             MongoCollection<Document> collection = database.getCollection(BOOKS_COLLECTION);
-            // Sök efter böcker med genomsnittsbetyg som avrundas till rating
-            Bson filter = Filters.eq("averageRating", (double) rating);
+
+            //Greater than or equal
+            Bson filter = Filters.gte("averageRating", rating);
 
             for (Document doc : collection.find(filter)) {
                 Book book = documentToBook(doc);
@@ -172,7 +181,7 @@ public class BooksDbMongo implements BooksDbInterface {
     }
 
     @Override
-    public void addBook(Book book) throws BooksDbException {
+    public void createBook(Book book) throws BooksDbException {
         checkConnection();
         try {
             MongoCollection<Document> collection = database.getCollection(BOOKS_COLLECTION);
@@ -223,7 +232,7 @@ public class BooksDbMongo implements BooksDbInterface {
     }
 
     @Override
-    public Book getBookById(int bookId) throws BooksDbException {
+    public Book readBook(int bookId) throws BooksDbException {
         checkConnection();
         try {
             MongoCollection<Document> collection = database.getCollection(BOOKS_COLLECTION);
@@ -370,8 +379,7 @@ public class BooksDbMongo implements BooksDbInterface {
         return genres;
     }
 
-    // Helper methods
-
+    // Hjälp metoder (endast för denna klass)
     private void checkConnection() throws BooksDbException {
         if (database == null || mongoClient == null) {
             throw new BooksDbException("Not connected to database. Call connect() first.");
@@ -551,4 +559,31 @@ public class BooksDbMongo implements BooksDbInterface {
                 doc.getString("username")
         );
     }
+
+    /**
+     * Skapar index för snabbare sökningar.
+     * Körs automatiskt vid anslutning.
+     */
+    private void createIndexes(){
+        try{
+            MongoCollection<Document> booksCollection = database.getCollection(BOOKS_COLLECTION);
+
+
+            booksCollection.createIndex(Indexes.text("title"));
+            booksCollection.createIndex(Indexes.ascending("ISBN"));
+            booksCollection.createIndex(Indexes.ascending("authors.name"));
+            booksCollection.createIndex(Indexes.ascending("genres.genreName"));
+            booksCollection.createIndex(Indexes.descending("averageRating"));
+            booksCollection.createIndex(Indexes.ascending("bookId"), //vara unik
+                    new IndexOptions().unique(true)
+            );
+
+            System.out.println("Indexes created successfully!");
+
+
+        }catch (Exception e){
+            System.err.println("Warning: Could not create indexes - " + e.getMessage());
+        }
+    }
+
 }

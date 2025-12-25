@@ -7,17 +7,18 @@ import java.util.Objects;
  */
 public class Review {
     private int reviewId;
-    private int bookId;
-    private int userId;
+    private int bookId; //referens till Book
+    private int userId; //referens till user
     private String username;
     private int rating;
     private String reviewText;
     private String reviewDate;
 
-    // Constructors
+    // för mongoDb ska konvertera document till ett review-objekt
     public Review() {
     }
 
+    // läser från databas
     public Review(int reviewId, int bookId, int userId, String username,
                   int rating, String reviewText, String reviewDate) {
         this.reviewId = reviewId;
@@ -29,58 +30,48 @@ public class Review {
         this.reviewDate = reviewDate;
     }
 
+    //getters
     public int getReviewId() {
         return reviewId;
     }
-
-    public void setReviewId(int reviewId) {
-        this.reviewId = reviewId;
-    }
-
     public int getBookId() {
         return bookId;
     }
-
-    public void setBookId(int bookId) {
-        this.bookId = bookId;
-    }
-
     public int getUserId() {
         return userId;
     }
-
-    public void setUserId(int userId) {
-        this.userId = userId;
-    }
-
     public String getUsername() {
         return username;
     }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
     public int getRating() {
         return rating;
     }
-
-    public void setRating(int rating) {
-        this.rating = rating;
-    }
-
     public String getReviewText() {
         return reviewText;
     }
-
-    public void setReviewText(String reviewText) {
-        this.reviewText = reviewText;
-    }
-
     public String getReviewDate() {
         return reviewDate;
     }
 
+    //setters
+    public void setReviewId(int reviewId) {
+        this.reviewId = reviewId;
+    }
+    public void setBookId(int bookId) {
+        this.bookId = bookId;
+    }
+    public void setUserId(int userId) {
+        this.userId = userId;
+    }
+    public void setUsername(String username) {
+        this.username = username;
+    }
+    public void setRating(int rating) {
+        this.rating = rating;
+    }
+    public void setReviewText(String reviewText) {
+        this.reviewText = reviewText;
+    }
     public void setReviewDate(String reviewDate) {
         this.reviewDate = reviewDate;
     }

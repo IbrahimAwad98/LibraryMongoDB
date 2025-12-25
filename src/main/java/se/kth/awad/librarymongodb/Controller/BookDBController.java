@@ -136,7 +136,7 @@ public class BookDBController {
         Task<Void> task = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
-                booksDb.addBook(book);
+                booksDb.createBook(book);
                 return null;
             }
         };
