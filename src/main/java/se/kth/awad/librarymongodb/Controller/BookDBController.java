@@ -133,6 +133,9 @@ public class BookDBController {
         }
         Book book = result.get();
 
+        //användare som la till boken
+        book.setAddedByUserId(currentUser.getUserID());
+
         Task<Void> task = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
@@ -182,12 +185,19 @@ public class BookDBController {
         Task<Void> task = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
-                List<Book> books = booksDb.searchBooksByTitle(title);
-                if (books.isEmpty()) {
-                    throw new BooksDbException("No book found with title: " + title);
+                // Use exact title match instead of text search to get the correct book
+                List<Book> allBooks = booksDb.getAllBooks();
+                Book bookToDelete = null;
+                for (Book book : allBooks) {
+                    if (book.getTitle().equalsIgnoreCase(title)) {
+                        bookToDelete = book;
+                        break;
+                    }
                 }
-                Book book = books.get(0);
-                booksDb.deleteBook(book);
+                if (bookToDelete == null) {
+                    throw new BooksDbException("No book found with exact title: " + title);
+                }
+                booksDb.deleteBook(bookToDelete);
                 return null;
             }
         };
@@ -415,7 +425,18 @@ public class BookDBController {
                 List<Review> reviews = booksDb.getReviewsForBook(book.getBookId());
                 // Authors are already in the book object
                 List<Author> authors = book.getAuthors();
-                return new DetailsData(reviews, authors);
+
+                // Hämta vem som la till boken
+                String addedBy = "Unknown";
+                if(book.getAddedByUserId() > 0){
+                    try {
+                        addedBy = booksDb.getUsernameById(book.getAddedByUserId());
+                    } catch (BooksDbException e) {
+                        addedBy = "User ID: " + book.getAddedByUserId();
+                    }
+                }
+
+                return new DetailsData(reviews, authors, addedBy);
             }
         };
 
@@ -423,9 +444,12 @@ public class BookDBController {
             DetailsData data = task.getValue();
             List<Review> reviews = data.reviews;
             List<Author> authors = data.authors;
+            String addedBy = data.addedBy;
 
             StringBuilder content = new StringBuilder();
 
+            content.append("ADDED BY:\n");
+            content.append("• ").append(addedBy).append("\n\n");
 
             content.append("AUTHORS:\n");
             if (authors.isEmpty()) {
@@ -463,7 +487,7 @@ public class BookDBController {
             }
 
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Book details");
+            alert.setTitle("Book Details");
             alert.setHeaderText(book.getTitle());
             alert.setContentText(content.toString());
 
@@ -493,10 +517,12 @@ public class BookDBController {
     private static class DetailsData {
         final List<Review> reviews;
         final List<Author> authors;
+        String addedBy;
 
-        DetailsData(List<Review> reviews, List<Author> authors) {
+        DetailsData(List<Review> reviews, List<Author> authors, String addedBy) {
             this.reviews = reviews;
             this.authors = authors;
+            this.addedBy = addedBy;
         }
     }
 }

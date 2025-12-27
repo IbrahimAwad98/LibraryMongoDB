@@ -17,7 +17,8 @@ import org.bson.conversions.Bson;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
+
+import static com.mongodb.client.model.Filters.eq;
 
 /**
  * MongoDB-implementation av BooksDbInterface.
@@ -34,7 +35,6 @@ public class BooksDbMongo implements BooksDbInterface {
     private static final String USERS_COLLECTION = "USERS";
     private static final String COUNTERS_COLLECTION = "COUNTERS";
 
-
     @Override
     public boolean connect(String databaseName) throws BooksDbException {
         try {
@@ -45,9 +45,9 @@ public class BooksDbMongo implements BooksDbInterface {
             mongoClient = MongoClients.create(settings);
             database = mongoClient.getDatabase(DATABASE_NAME);
 
-            database.listCollectionNames().first(); //lista alla collections och visa första (bok)
+            database.listCollectionNames().first(); // lista alla collections och visa första (bok)
 
-            createIndexes(); //skapa index här
+            createIndexes(); // skapa index här
             return true;
         } catch (Exception e) {
             throw new BooksDbException("Failed to connect to MongoDB: " + e.getMessage(), e);
@@ -58,7 +58,7 @@ public class BooksDbMongo implements BooksDbInterface {
     public void disconnect() throws BooksDbException {
         try {
             if (mongoClient != null) {
-                mongoClient.close(); //stäng anslutning
+                mongoClient.close(); // stäng anslutning
                 mongoClient = null;
                 database = null;
             }
@@ -73,8 +73,8 @@ public class BooksDbMongo implements BooksDbInterface {
         List<Book> books = new ArrayList<>();
         try {
             MongoCollection<Document> collection = database.getCollection(BOOKS_COLLECTION);
-            for (Document doc : collection.find()) { //returnera dokument (ingen filter)
-                books.add(documentToBook(doc)); //konvertera dokument till javabok
+            for (Document doc : collection.find()) { // returnera dokument (ingen filter)
+                books.add(documentToBook(doc)); // konvertera dokument till objekt (bok)
             }
         } catch (Exception e) {
             throw new BooksDbException("Error getting all books: " + e.getMessage(), e);
@@ -89,7 +89,7 @@ public class BooksDbMongo implements BooksDbInterface {
         try {
             MongoCollection<Document> collection = database.getCollection(BOOKS_COLLECTION);
 
-            //anväder indexering istället än regex
+            // anväder indexering
             Bson filter = Filters.text(title);
 
             for (Document doc : collection.find(filter)) {
@@ -108,8 +108,8 @@ public class BooksDbMongo implements BooksDbInterface {
         try {
             MongoCollection<Document> collection = database.getCollection(BOOKS_COLLECTION);
 
-            //med hjälp av indexering
-            Bson filter = Filters.eq("ISBN", isbn);
+            // med hjälp av indexering
+            Bson filter = eq("ISBN", isbn);
 
             for (Document doc : collection.find(filter)) {
                 books.add(documentToBook(doc));
@@ -146,7 +146,7 @@ public class BooksDbMongo implements BooksDbInterface {
         try {
             MongoCollection<Document> collection = database.getCollection(BOOKS_COLLECTION);
 
-            //Regex search
+            // Regex search
             Bson filter = Filters.regex("genres.name", genre, "i");
 
             for (Document doc : collection.find(filter)) {
@@ -164,11 +164,8 @@ public class BooksDbMongo implements BooksDbInterface {
         List<Book> books = new ArrayList<>();
         try {
             MongoCollection<Document> collection = database.getCollection(BOOKS_COLLECTION);
-
-            //Greater than or equal
-            Bson filter = Filters.gte("average_rating", rating);
-
-            for (Document doc : collection.find(filter)) {
+            //hämta alla (behövs ingen filter)
+            for (Document doc : collection.find()) {
                 Book book = documentToBook(doc);
                 if (Math.round(book.getAverageRating()) == rating) {
                     books.add(book);
@@ -185,14 +182,22 @@ public class BooksDbMongo implements BooksDbInterface {
         checkConnection();
         try {
             MongoCollection<Document> collection = database.getCollection(BOOKS_COLLECTION);
-            
+
+            if (book.getAddedByUserId() <= 0) {
+                throw new BooksDbException("user id must be set before adding book");
+            }
+
             // Hämta nästa bookId från COUNTERS
-            int bookId = getNextSequence("bookId");
+            int bookId = getNextSequence("book_id");
             book.setBookId(bookId);
 
+            // Säkerställ att nya böcker börjar med tom recensionslista
+            book.setAverageRating(0.0);
+            book.setReviewCount(0);
+
             // Konvertera Book objekt till MongoDB Document
-            Document doc = bookToDocument(book);
-            collection.insertOne(doc); //spara i MongoDB
+            Document document = bookToDocument(book);
+            collection.insertOne(document);// spara i MongoDB
         } catch (Exception e) {
             throw new BooksDbException("Error adding book: " + e.getMessage(), e);
         }
@@ -203,7 +208,7 @@ public class BooksDbMongo implements BooksDbInterface {
         checkConnection();
         try {
             MongoCollection<Document> collection = database.getCollection(BOOKS_COLLECTION);
-            Bson filter = Filters.eq("bookId", book.getBookId());
+            Bson filter = eq("book_id", book.getBookId());
 
             Document doc = bookToDocument(book);
             UpdateResult result = collection.replaceOne(filter, doc);
@@ -221,9 +226,11 @@ public class BooksDbMongo implements BooksDbInterface {
         checkConnection();
         try {
             MongoCollection<Document> collection = database.getCollection(BOOKS_COLLECTION);
-            Bson filter = Filters.eq("book_id", book.getBookId());
+
+            Bson filter = eq("book_id", book.getBookId());
 
             DeleteResult result = collection.deleteOne(filter);
+
             if (result.getDeletedCount() == 0) {
                 throw new BooksDbException("No book found with ID: " + book.getBookId());
             }
@@ -239,10 +246,10 @@ public class BooksDbMongo implements BooksDbInterface {
         try {
             MongoCollection<Document> collection = database.getCollection(BOOKS_COLLECTION);
 
-            //sök filter med equlas efter id.
-            Bson filter = Filters.eq("bookId", bookId);
+            // sök filter med equlas efter id.
+            Bson filter = eq("book_id", bookId);
 
-            //ta första och enda resultat
+            // ta första och enda resultat
             Document doc = collection.find(filter).first();
             if (doc == null) {
                 throw new BooksDbException("No book found with ID: " + bookId);
@@ -258,14 +265,27 @@ public class BooksDbMongo implements BooksDbInterface {
         checkConnection();
         try {
             MongoCollection<Document> collection = database.getCollection(REVIEWS_COLLECTION);
-            
-            // Hämta nästa reviewId från COUNTERS
-            int reviewId = getNextSequence("reviewId");
-            review.setReviewId(reviewId);
 
-            // Konvertera och sätt in den
-            Document doc = reviewToDocument(review);
-            collection.insertOne(doc);
+            Bson existingFilter = Filters.and(
+                    eq("book_id", review.getBookId()),
+                    eq("user_id", review.getUserId()));
+            Document existingReview = collection.find(existingFilter).first();
+
+            if (existingReview != null) {
+                // Uppdatera befintlig review istället för att skapa ny
+                int existingReviewId = existingReview.getInteger("review_id");
+                review.setReviewId(existingReviewId);
+
+                Document doc = reviewToDocument(review);
+                Bson updateFilter = eq("review_id", existingReviewId);
+                collection.replaceOne(updateFilter, doc);
+            } else {
+                int reviewId = getNextSequence("review_id");
+                review.setReviewId(reviewId);
+
+                Document doc = reviewToDocument(review);
+                collection.insertOne(doc);
+            }
 
             // Uppdatera genomsnittsbetyg för boken
             updateBookAverageRating(review.getBookId());
@@ -281,7 +301,7 @@ public class BooksDbMongo implements BooksDbInterface {
         try {
             MongoCollection<Document> collection = database.getCollection(REVIEWS_COLLECTION);
 
-            Bson filter = Filters.eq("bookId", bookId);
+            Bson filter = eq("book_id", bookId);
 
             for (Document doc : collection.find(filter)) {
                 reviews.add(documentToReview(doc));
@@ -298,7 +318,7 @@ public class BooksDbMongo implements BooksDbInterface {
         try {
             MongoCollection<Document> collection = database.getCollection(USERS_COLLECTION);
 
-            Bson filter = Filters.eq("username", username);
+            Bson filter = eq("username", username);
 
             Document doc = collection.find(filter).first();
             if (doc == null) {
@@ -310,24 +330,41 @@ public class BooksDbMongo implements BooksDbInterface {
         }
     }
 
+    public String getUsernameById(int userId) throws BooksDbException {
+        checkConnection();
+        try {
+            MongoCollection<Document> collection = database.getCollection(USERS_COLLECTION);
+            Bson filter = eq("userID", userId);
+
+            Document document = collection.find(filter).first();
+            if (document == null) {
+                return "Unknown";
+            }
+
+            return document.getString("username");
+        } catch (Exception e) {
+            throw new BooksDbException("Error getting username by ID: " + e.getMessage(), e);
+        }
+    }
+
     @Override
     public void addUser(User user) throws BooksDbException {
         checkConnection();
         try {
             MongoCollection<Document> collection = database.getCollection(USERS_COLLECTION);
-            
+
             // Kontrollera om användaren redan finns
-            Bson filter = Filters.eq("username", user.getUsername());
+            Bson filter = eq("username", user.getUsername());
             if (collection.find(filter).first() != null) {
                 throw new BooksDbException("Username already exists: " + user.getUsername());
             }
 
             // Hämta nästa userId från COUNTERS
-            int userId = getNextSequence("userId");
+            int userId = getNextSequence("user_id");
             user.setUserID(userId);
 
-            Document doc = userToDocument(user);
-            collection.insertOne(doc);
+            Document document = userToDocument(user);
+            collection.insertOne(document);
         } catch (Exception e) {
             throw new BooksDbException(e.getMessage(), e);
         }
@@ -339,7 +376,7 @@ public class BooksDbMongo implements BooksDbInterface {
         List<Author> authors = new ArrayList<>();
         try {
             MongoCollection<Document> collection = database.getCollection(BOOKS_COLLECTION);
-            
+
             // Hämta alla unika författare från alla böcker
             for (Document bookDoc : collection.find()) {
 
@@ -366,7 +403,7 @@ public class BooksDbMongo implements BooksDbInterface {
         List<Genre> genres = new ArrayList<>();
         try {
             MongoCollection<Document> collection = database.getCollection(BOOKS_COLLECTION);
-            
+
             // Hämta alla unika genrer från alla böcker
             for (Document bookDoc : collection.find()) {
                 List<Document> genreDocs = (List<Document>) bookDoc.get("genres");
@@ -396,14 +433,12 @@ public class BooksDbMongo implements BooksDbInterface {
     private int getNextSequence(String sequenceName) throws BooksDbException {
         try {
             MongoCollection<Document> collection = database.getCollection(COUNTERS_COLLECTION);
-            Bson filter = Filters.eq("_id", sequenceName);
-            Bson update = Updates.inc("seq", 1);
-            
+            Bson filter = eq("_id", sequenceName);
+            Bson update = Updates.inc("seq", 1); //öka seq med 1
             Document result = collection.findOneAndUpdate(filter, update);
             if (result == null) {
                 // Skapa ny counter om den inte finns
-                Document newCounter = new Document("_id", sequenceName)
-                        .append("seq", 1);
+                Document newCounter = new Document("_id", sequenceName).append("seq", 1);
                 collection.insertOne(newCounter);
                 return 1;
             }
@@ -416,7 +451,7 @@ public class BooksDbMongo implements BooksDbInterface {
     private void updateBookAverageRating(int bookId) throws BooksDbException {
         try {
             MongoCollection<Document> reviewsCollection = database.getCollection(REVIEWS_COLLECTION);
-            Bson filter = Filters.eq("book_id", bookId);
+            Bson filter = eq("book_id", bookId);
 
             List<Document> reviews = reviewsCollection.find(filter).into(new ArrayList<>());
             if (reviews.isEmpty()) {
@@ -430,11 +465,10 @@ public class BooksDbMongo implements BooksDbInterface {
             double average = sum / reviews.size();
 
             MongoCollection<Document> booksCollection = database.getCollection(BOOKS_COLLECTION);
-            Bson bookFilter = Filters.eq("book_id", bookId);
+            Bson bookFilter = eq("book_id", bookId);
             Bson update = Updates.combine(
                     Updates.set("average_rating", average),
-                    Updates.set("rating_count", reviews.size())
-            );
+                    Updates.set("rating_count", reviews.size()));
             booksCollection.updateOne(bookFilter, update);
         } catch (Exception e) {
             throw new BooksDbException("Error updating book average rating: " + e.getMessage(), e);
@@ -442,10 +476,11 @@ public class BooksDbMongo implements BooksDbInterface {
     }
 
     private Document bookToDocument(Book book) {
-        Document doc = new Document("book_id", book.getBookId())
+        Document document = new Document("book_id", book.getBookId())
                 .append("ISBN", book.getIsbn())
                 .append("title", book.getTitle())
                 .append("published_date", book.getPublishedDate())
+                .append("added_by_user_id", book.getAddedByUserId())
                 .append("average_rating", book.getAverageRating())
                 .append("rating_count", book.getReviewCount());
 
@@ -456,7 +491,7 @@ public class BooksDbMongo implements BooksDbInterface {
                 authorDocs.add(authorToDocument(author));
             }
         }
-        doc.append("authors", authorDocs);
+        document.append("authors", authorDocs);
 
         // Lägg till genrer
         List<Document> genreDocs = new ArrayList<>();
@@ -465,9 +500,9 @@ public class BooksDbMongo implements BooksDbInterface {
                 genreDocs.add(genreToDocument(genre));
             }
         }
-        doc.append("genres", genreDocs);
+        document.append("genres", genreDocs);
 
-        return doc;
+        return document;
     }
 
     private Book documentToBook(Document doc) {
@@ -476,18 +511,19 @@ public class BooksDbMongo implements BooksDbInterface {
         book.setIsbn(doc.getString("ISBN"));
         book.setTitle(doc.getString("title"));
         book.setPublishedDate(doc.getString("published_date"));
-        
+        book.setAddedByUserId(doc.getInteger("added_by_user_id", 0));
+
         Object avgRating = doc.get("average_rating");
         if (avgRating instanceof Number) {
             book.setAverageRating(((Number) avgRating).doubleValue());
         } else {
             book.setAverageRating(0.0);
         }
-        
+
         book.setReviewCount(doc.getInteger("rating_count", 0));
 
         // Lägg till författare
-        List<Document> authorDocs = (List<Document>) doc.get("authors");
+        List<Document> authorDocs = doc.getList("authors", Document.class);
         if (authorDocs != null) {
             for (Document authorDoc : authorDocs) {
                 book.addAuthor(documentToAuthor(authorDoc));
@@ -495,96 +531,80 @@ public class BooksDbMongo implements BooksDbInterface {
         }
 
         // Lägg till genrer
-        List<Document> genreDocs = (List<Document>) doc.get("genres");
+        List<Document> genreDocs = doc.getList("genres", Document.class);
         if (genreDocs != null) {
             for (Document genreDoc : genreDocs) {
                 book.addGenre(documentToGenre(genreDoc));
             }
         }
-
         return book;
     }
 
     private Document authorToDocument(Author author) {
-        return new Document("author_id", author.getAuthorID())
-                .append("name", author.getName())
+        return new Document("author_id", author.getAuthorID()).append("name", author.getName())
                 .append("birth_date", author.getBirthDate());
     }
 
     private Author documentToAuthor(Document doc) {
-        return new Author(
-                doc.getInteger("author_id", 0),
-                doc.getString("name"),
-                doc.getString("birth_date")
-        );
+        return new Author(doc.getInteger("author_id", 0), doc.getString("name"),
+                doc.getString("birth_date"));
     }
 
     private Document genreToDocument(Genre genre) {
-        return new Document("genre_id", genre.getGenreID())
-                .append("name", genre.getGenreName());
+        return new Document("genre_id", genre.getGenreID()).append("name", genre.getGenreName());
     }
 
     private Genre documentToGenre(Document doc) {
-        return new Genre(
-                doc.getInteger("genre_id", 0),
-                doc.getString("name")
-        );
+        return new Genre(doc.getInteger("genre_id", 0), doc.getString("name"));
     }
 
     private Document reviewToDocument(Review review) {
-        return new Document("reviewId", review.getReviewId())
-                .append("bookId", review.getBookId())
-                .append("userId", review.getUserId())
+        return new Document("review_id", review.getReviewId())
+                .append("book_id", review.getBookId())
+                .append("user_id", review.getUserId())
                 .append("username", review.getUsername())
                 .append("rating", review.getRating())
-                .append("reviewText", review.getReviewText())
-                .append("reviewDate", review.getReviewDate());
+                .append("review_text", review.getReviewText())
+                .append("review_date", review.getReviewDate());
     }
 
     private Review documentToReview(Document doc) {
         return new Review(
-                doc.getInteger("reviewId", 0),
-                doc.getInteger("bookId", 0),
-                doc.getInteger("userId", 0),
+                doc.getInteger("review_id", 0),
+                doc.getInteger("book_id", 0),
+                doc.getInteger("user_id", 0),
                 doc.getString("username"),
                 doc.getInteger("rating", 0),
-                doc.getString("reviewText"),
-                doc.getString("reviewDate")
-        );
+                doc.getString("review_text"),
+                doc.getString("review_date"));
     }
 
     private Document userToDocument(User user) {
-        return new Document("userID", user.getUserID())
-                .append("username", user.getUsername());
+        return new Document("userID", user.getUserID()).append("username", user.getUsername());
     }
 
     private User documentToUser(Document doc) {
-        return new User(
-                doc.getInteger("userID", 0),
-                doc.getString("username")
-        );
+        return new User(doc.getInteger("userID", 0), doc.getString("username"));
     }
 
     /**
      * Skapar index för snabbare sökningar.
      * Körs automatiskt vid anslutning.
      */
-    private void createIndexes(){
-        try{
+    private void createIndexes() {
+        try {
             MongoCollection<Document> booksCollection = database.getCollection(BOOKS_COLLECTION);
 
-            //indexering för varje sökningstyp
+            // indexering för varje sökningstyp
             booksCollection.createIndex(Indexes.text("title"));
             booksCollection.createIndex(Indexes.ascending("ISBN"));
             booksCollection.createIndex(Indexes.ascending("authors.name"));
-            booksCollection.createIndex(Indexes.ascending("genres.genreName"));
-            booksCollection.createIndex(Indexes.descending("averageRating"));
-            booksCollection.createIndex(Indexes.ascending("bookId"), //vara unik
-                    new IndexOptions().unique(true)
-            );
+            booksCollection.createIndex(Indexes.ascending("genres.name"));
+            booksCollection.createIndex(Indexes.descending("average_rating"));
+            booksCollection.createIndex(Indexes.ascending("book_id"), new IndexOptions().unique(true));
 
             System.out.println("Indexes created successfully!");
-        }catch (Exception e){
+        } catch (Exception e) {
             System.err.println("Warning: Could not create indexes - " + e.getMessage());
         }
     }

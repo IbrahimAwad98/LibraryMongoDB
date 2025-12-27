@@ -110,6 +110,7 @@ public class AddBookDialog extends Dialog<Book> {
                         result.setIsbn(isbnField.getText().trim());
                         result.setTitle(titleField.getText().trim());
                         result.setPublishedDate(publishedDate);
+                        result.setAddedByUserId(currentUser.getUserID());
 
                         ObservableList<Author> selectedAuthors = authorListView.getSelectionModel().getSelectedItems();
                         for (Author author : selectedAuthors) {

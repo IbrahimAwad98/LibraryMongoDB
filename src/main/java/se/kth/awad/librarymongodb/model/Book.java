@@ -7,7 +7,6 @@ import java.util.Objects;
 /**
  * Representerar en bok i biblioteket
  * där authors, genres är subdokument i den här dokument (bok klass).
- * obs: de ska vara lista eftersom många till många.
  */
 public class Book {
     private int bookId;
@@ -18,11 +17,14 @@ public class Book {
     private List<Genre> genres;
     private double averageRating;
     private int reviewCount;
+    private int addedByUserId;
 
     // för mongoDb ska konvertera document till ett bok-objekt
     public Book() {
         this.authors = new ArrayList<>();
         this.genres = new ArrayList<>();
+        this.averageRating = 0.0;
+        this.reviewCount = 0;
     }
 
     // löser från databas
@@ -62,32 +64,18 @@ public class Book {
     public int getReviewCount() {
         return reviewCount;
     }
+    public int getAddedByUserId(){return addedByUserId;}
 
     //setters
-    public void setBookId(int bookId) {
-        this.bookId = bookId;
-    }
-    public void setIsbn(String isbn) {
-        this.isbn = isbn;
-    }
-    public void setTitle(String title) {
-        this.title = title;
-    }
-    public void setPublishedDate(String publishedDate) {
-        this.publishedDate = publishedDate;
-    }
-    public void setAuthors(List<Author> authors) {
-        this.authors = authors;
-    }
-    public void setGenres(List<Genre> genres) {
-        this.genres = genres;
-    }
-    public void setAverageRating(double averageRating) {
-        this.averageRating = averageRating;
-    }
-    public void setReviewCount(int reviewCount) {
-        this.reviewCount = reviewCount;
-    }
+    public void setBookId(int bookId) {this.bookId = bookId;}
+    public void setIsbn(String isbn) {this.isbn = isbn;}
+    public void setTitle(String title) {this.title = title;}
+    public void setPublishedDate(String publishedDate) {this.publishedDate = publishedDate;}
+    public void setAuthors(List<Author> authors) {this.authors = authors;}
+    public void setGenres(List<Genre> genres) {this.genres = genres;}
+    public void setAverageRating(double averageRating) {this.averageRating = averageRating;}
+    public void setReviewCount(int reviewCount) {this.reviewCount = reviewCount;}
+    public void setAddedByUserId(int addedByUserId){this.addedByUserId = addedByUserId;}
 
     // lägger till författare i listan
     public void addAuthor(Author author) {

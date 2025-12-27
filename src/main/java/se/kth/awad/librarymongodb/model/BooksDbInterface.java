@@ -32,9 +32,10 @@ public interface BooksDbInterface {
 
     // User operations
     User getUserByUsername(String username) throws BooksDbException;
+    String getUsernameById(int userId) throws BooksDbException;
     void addUser(User user) throws BooksDbException;
 
-    // Helper operations
+    // Helper operations (hämtar författare och genres)
     List<Author> getAllAuthors() throws BooksDbException;
     List<Genre> getAllGenres() throws BooksDbException;
 }

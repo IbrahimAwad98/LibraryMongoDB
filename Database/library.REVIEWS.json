@@ -1,108 +1,204 @@
 [{
   "_id": {
-    "$oid": "694bd88387853e442e62a1e2"
+    "$oid": "694fbad8c238171f3f29ab3b"
   },
   "review_id": 1,
   "book_id": 1,
   "user_id": 1,
   "username": "testuser",
   "rating": 7,
-  "review_text": "En fantastisk klassiker! Mycket rolig.",
+  "review_text": "Ganska bra.",
   "review_date": "2024-01-15"
 },
 {
   "_id": {
-    "$oid": "694bd98d87853e442e62a1f8"
+    "$oid": "694fbad8c238171f3f29ab3c"
   },
   "review_id": 2,
   "book_id": 1,
   "user_id": 2,
   "username": "admin",
   "rating": 8,
-  "review_text": null,
+  "review_text": "Gillade den!",
   "review_date": "2024-01-20"
 },
 {
   "_id": {
-    "$oid": "694bd99387853e442e62a1fa"
+    "$oid": "694fbad8c238171f3f29ab3d"
   },
   "review_id": 3,
   "book_id": 1,
   "user_id": 3,
   "username": "ibrahim",
-  "rating": 9,
-  "review_text": null,
-  "review_date": "2024-01-25"
+  "rating": 10,
+  "review_text": "",
+  "review_date": "2025-12-27"
 },
 {
   "_id": {
-    "$oid": "694bd99987853e442e62a1fc"
+    "$oid": "694fbad8c238171f3f29ab3e"
   },
   "review_id": 4,
   "book_id": 2,
   "user_id": 1,
   "username": "testuser",
   "rating": 6,
-  "review_text": null,
+  "review_text": "Lite tråkig.",
   "review_date": "2024-02-01"
 },
 {
   "_id": {
-    "$oid": "694bd99f87853e442e62a1fe"
+    "$oid": "694fbad8c238171f3f29ab3f"
   },
   "review_id": 5,
   "book_id": 2,
   "user_id": 3,
   "username": "ibrahim",
   "rating": 7,
-  "review_text": null,
+  "review_text": "Helt okej.",
   "review_date": "2024-02-05"
 },
 {
   "_id": {
-    "$oid": "694bd9a787853e442e62a200"
+    "$oid": "694fbad8c238171f3f29ab40"
   },
   "review_id": 6,
   "book_id": 2,
   "user_id": 4,
   "username": "anna",
   "rating": 8,
-  "review_text": null,
+  "review_text": "Bra!",
   "review_date": "2024-02-10"
 },
 {
   "_id": {
-    "$oid": "694bd9ac87853e442e62a202"
+    "$oid": "694fbad8c238171f3f29ab41"
   },
   "review_id": 7,
   "book_id": 3,
   "user_id": 2,
   "username": "admin",
   "rating": 9,
-  "review_text": "Bästa fantasy-serien någonsin.",
+  "review_text": "Min favvo!",
   "review_date": "2024-03-01"
 },
 {
   "_id": {
-    "$oid": "694bd9b487853e442e62a204"
+    "$oid": "694fbad8c238171f3f29ab42"
+  },
+  "review_id": 8,
+  "book_id": 3,
+  "user_id": 3,
+  "username": "ibrahim",
+  "rating": 10,
+  "review_text": "Så bra!",
+  "review_date": "2024-03-05"
+},
+{
+  "_id": {
+    "$oid": "694fbad8c238171f3f29ab43"
+  },
+  "review_id": 9,
+  "book_id": 3,
+  "user_id": 4,
+  "username": "anna",
+  "rating": 10,
+  "review_text": "Älskar den!",
+  "review_date": "2024-03-10"
+},
+{
+  "_id": {
+    "$oid": "694fbad8c238171f3f29ab44"
   },
   "review_id": 10,
   "book_id": 4,
   "user_id": 1,
   "username": "testuser",
   "rating": 8,
-  "review_text": null,
+  "review_text": "Fin och kort.",
   "review_date": "2024-04-01"
 },
 {
   "_id": {
-    "$oid": "694bd9ba87853e442e62a206"
+    "$oid": "694fbad8c238171f3f29ab45"
+  },
+  "review_id": 11,
+  "book_id": 4,
+  "user_id": 2,
+  "username": "admin",
+  "rating": 9,
+  "review_text": "Jättebra!",
+  "review_date": "2024-04-05"
+},
+{
+  "_id": {
+    "$oid": "694fbad8c238171f3f29ab46"
+  },
+  "review_id": 12,
+  "book_id": 4,
+  "user_id": 3,
+  "username": "ibrahim",
+  "rating": 9,
+  "review_text": "Riktigt bra.",
+  "review_date": "2024-04-10"
+},
+{
+  "_id": {
+    "$oid": "694fbad8c238171f3f29ab47"
   },
   "review_id": 13,
   "book_id": 5,
   "user_id": 1,
   "username": "testuser",
   "rating": 5,
-  "review_text": null,
+  "review_text": "Inte så bra.",
   "review_date": "2024-05-01"
+},
+{
+  "_id": {
+    "$oid": "694fbad8c238171f3f29ab48"
+  },
+  "review_id": 14,
+  "book_id": 5,
+  "user_id": 2,
+  "username": "admin",
+  "rating": 6,
+  "review_text": "Okej.",
+  "review_date": "2024-05-05"
+},
+{
+  "_id": {
+    "$oid": "694fbad8c238171f3f29ab49"
+  },
+  "review_id": 15,
+  "book_id": 5,
+  "user_id": 4,
+  "username": "anna",
+  "rating": 7,
+  "review_text": "Mysig.",
+  "review_date": "2024-05-10"
+},
+{
+  "_id": {
+    "$oid": "694fca56f2c5544331ed6335"
+  },
+  "reviewId": 1,
+  "bookId": 1,
+  "userId": 3,
+  "username": "ibrahim",
+  "rating": 10,
+  "reviewText": "",
+  "reviewDate": "2025-12-27"
+},
+{
+  "_id": {
+    "$oid": "694fd2ef3f11812411fac98e"
+  },
+  "review_id": 16,
+  "book_id": 6,
+  "user_id": 4,
+  "username": "anna",
+  "rating": 0,
+  "review_text": "Riktigt fin bok!",
+  "review_date": "2025-12-27"
 }]

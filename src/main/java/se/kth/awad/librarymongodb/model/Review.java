@@ -7,8 +7,8 @@ import java.util.Objects;
  */
 public class Review {
     private int reviewId;
-    private int bookId; //referens till Book
-    private int userId; //referens till user
+    private int bookId;
+    private int userId;
     private String username;
     private int rating;
     private String reviewText;
