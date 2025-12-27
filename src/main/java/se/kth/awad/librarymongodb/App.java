@@ -20,7 +20,7 @@ public class App extends Application {
         booksPane.setController(controller);
 
         Scene scene = new Scene(booksPane, 1280, 720);
-        primaryStage.setTitle("Books Database Client v1.0");
+        primaryStage.setTitle("Library Database Client v2.0");
 
         // Lägg till logotyp om den finns
         try {

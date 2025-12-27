@@ -1,5 +1,6 @@
 package se.kth.awad.librarymongodb.view;
 
+import se.kth.awad.librarymongodb.model.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
@@ -11,7 +12,6 @@ import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.util.Callback;
-import se.kth.awad.librarymongodb.model.*;
 import java.util.List;
 import java.util.Optional;
 
@@ -53,7 +53,6 @@ public class AddBookDialog extends Dialog<Book> {
         grid.add(genreField, 2, 4);
         genreField.setPromptText("Comma-separated (e.g., Fantasy, Young Adult)");
 
-        // Krav B: Använd ListView för att välja befintliga författare
         grid.add(new Label("Author(s) "), 1, 5);
         authorListView.setItems(availableAuthors);
         authorListView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);

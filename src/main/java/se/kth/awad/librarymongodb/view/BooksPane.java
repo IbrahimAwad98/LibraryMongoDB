@@ -170,7 +170,7 @@ public class BooksPane extends VBox {
         fileMenu.getItems().addAll(connectItem, disconnectItem, exitItem);
 
         connectItem.setOnAction(event -> {
-            controller.connectToDb();
+            controller.connectToDatabase();
         });
         disconnectItem.setOnAction(event -> {
             controller.disconnect();
@@ -182,17 +182,17 @@ public class BooksPane extends VBox {
         Menu manageMenu = new Menu("Manage");
 
         // Spara referenser till menu items för att kunna aktivera/inaktivera dem
-        addMenuItem = new MenuItem("Add");
+        addMenuItem = new MenuItem("Add book");
         addMenuItem.setOnAction(event -> {
             controller.addBook();
         });
 
-        removeMenuItem = new MenuItem("Remove");
+        removeMenuItem = new MenuItem("Remove book");
         removeMenuItem.setOnAction(event -> {
             controller.removeBook();
         });
 
-        updateMenuItem = new MenuItem("Update Grade");
+        updateMenuItem = new MenuItem("Update Rating");
         updateMenuItem.setOnAction(event -> {
             controller.updateGrade();
         });
@@ -212,7 +212,7 @@ public class BooksPane extends VBox {
         aboutItem.setOnAction(event -> {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("About");
-            alert.setHeaderText("Book database application v1.0");
+            alert.setHeaderText("Library application v2.0");
             alert.setContentText("Made by Ibrahim Awad & Ahmed El Yasini");
             alert.showAndWait();
         });

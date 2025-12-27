@@ -1,11 +1,11 @@
 package se.kth.awad.librarymongodb.view;
 
-import javafx.geometry.Insets;
-import javafx.scene.control.*;
-import javafx.scene.layout.GridPane;
 import se.kth.awad.librarymongodb.model.BooksDbException;
 import se.kth.awad.librarymongodb.model.BooksDbInterface;
 import se.kth.awad.librarymongodb.model.User;
+import javafx.geometry.Insets;
+import javafx.scene.control.*;
+import javafx.scene.layout.GridPane;
 import javafx.application.Platform;
 
 /**

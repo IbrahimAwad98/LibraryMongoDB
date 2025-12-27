@@ -272,9 +272,22 @@ public class BooksDbMongo implements BooksDbInterface {
             Document existingReview = collection.find(existingFilter).first();
 
             if (existingReview != null) {
-                // Uppdatera befintlig review istället för att skapa ny
+                // Uppdatera befintlig review
                 int existingReviewId = existingReview.getInteger("review_id");
                 review.setReviewId(existingReviewId);
+
+                // Om det redan finns text i review behåll då
+                String existingText = existingReview.getString("review_text");
+                if (existingText != null && !existingText.isEmpty() && 
+                    (review.getReviewText() == null || review.getReviewText().isEmpty())) {
+                    review.setReviewText(existingText);
+                }
+
+                // Om det redan finns rating och ny review har rating = 0, behåll den gamla ratingen
+                int existingRating = existingReview.getInteger("rating", 0);
+                if (existingRating > 0 && review.getRating() == 0) {
+                    review.setRating(existingRating);
+                }
 
                 Document doc = reviewToDocument(review);
                 Bson updateFilter = eq("review_id", existingReviewId);
@@ -455,20 +468,38 @@ public class BooksDbMongo implements BooksDbInterface {
 
             List<Document> reviews = reviewsCollection.find(filter).into(new ArrayList<>());
             if (reviews.isEmpty()) {
+                // ingen reviews då rating = 0
+                MongoCollection<Document> booksCollection = database.getCollection(BOOKS_COLLECTION);
+                Bson bookFilter = eq("book_id", bookId);
+                Bson update = Updates.combine(
+                        Updates.set("average_rating", 0.0),
+                        Updates.set("rating_count", 0));
+                booksCollection.updateOne(bookFilter, update);
                 return;
             }
 
             double sum = 0;
+            int ratingCount = 0;
             for (Document review : reviews) {
-                sum += review.getInteger("rating", 0);
+                int rating = review.getInteger("rating", 0);
+                if (rating > 0) {
+                    sum += rating; //bara rating > 0
+                    ratingCount++;
+                }
             }
-            double average = sum / reviews.size();
+
+            double average;
+            if(ratingCount > 0){
+                average = sum / ratingCount; //finns rate då beräkna genomsnitt
+            }else {
+                average = 0.0;
+            }
 
             MongoCollection<Document> booksCollection = database.getCollection(BOOKS_COLLECTION);
             Bson bookFilter = eq("book_id", bookId);
             Bson update = Updates.combine(
                     Updates.set("average_rating", average),
-                    Updates.set("rating_count", reviews.size()));
+                    Updates.set("rating_count", ratingCount));
             booksCollection.updateOne(bookFilter, update);
         } catch (Exception e) {
             throw new BooksDbException("Error updating book average rating: " + e.getMessage(), e);
@@ -587,10 +618,7 @@ public class BooksDbMongo implements BooksDbInterface {
         return new User(doc.getInteger("userID", 0), doc.getString("username"));
     }
 
-    /**
-     * Skapar index för snabbare sökningar.
-     * Körs automatiskt vid anslutning.
-     */
+    // Skapar index för snabbare sökningar då körs automatiskt vid anslutning.
     private void createIndexes() {
         try {
             MongoCollection<Document> booksCollection = database.getCollection(BOOKS_COLLECTION);
@@ -603,10 +631,8 @@ public class BooksDbMongo implements BooksDbInterface {
             booksCollection.createIndex(Indexes.descending("average_rating"));
             booksCollection.createIndex(Indexes.ascending("book_id"), new IndexOptions().unique(true));
 
-            System.out.println("Indexes created successfully!");
         } catch (Exception e) {
             System.err.println("Warning: Could not create indexes - " + e.getMessage());
         }
     }
-
 }
