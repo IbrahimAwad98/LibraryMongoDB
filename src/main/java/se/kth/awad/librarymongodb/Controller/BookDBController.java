@@ -196,15 +196,16 @@ public class BookDBController {
     // Visar dialog och lägger till/uppdaterar betyg på bok.
     public void updateGrade() {
         UpdateGradeDialog dialog = new UpdateGradeDialog();
-        Optional<UpdateGradeDialog.GradeUpdate> result = dialog.showAndWait();
+        Optional<GradeUpdate> result = dialog.showAndWait();
 
         if (result.isEmpty()) {
             booksView.showAlertAndWait("Rate Update Cancelled!!!", INFORMATION);
             return;
         }
 
-        UpdateGradeDialog.GradeUpdate gradeUpdate = result.get();
+        GradeUpdate gradeUpdate = result.get();
         String title = gradeUpdate.getTitle().trim();
+
 
         if (title.isEmpty()) {
             booksView.showAlertAndWait("Title cannot be empty", WARNING);

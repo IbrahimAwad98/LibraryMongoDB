@@ -4,47 +4,30 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
-import javafx.util.Callback;
 
+/**
+ * Dialog för att uppdatera betyg på en bok.
+ */
+public class UpdateGradeDialog extends Dialog<GradeUpdate> {
 
-public class UpdateGradeDialog extends Dialog<UpdateGradeDialog.GradeUpdate> {
-
-    private final ComboBox<Integer> gradeField = new ComboBox<>();
-    private final TextField titleField = new TextField();
-
-
-    public static class GradeUpdate {
-        private final String title;
-        private final int grade;
-
-        public GradeUpdate(String title, int grade) {
-            this.title = title;
-            this.grade = grade;
-        }
-
-        public String getTitle() {
-            return title;
-        }
-
-        public int getGrade() {
-            return grade;
-        }
-    }
+    private final ComboBox<Integer> gradeField = new ComboBox<>(); // Dropdown för betyg (1-10)
+    private final TextField titleField = new TextField(); // Fält för boktitel
 
     public UpdateGradeDialog() {
         buildUpdateGradeDialog();
     }
-    private void buildUpdateGradeDialog(){
+
+    // Bygger dialogens användargränssnitt
+    private void buildUpdateGradeDialog() {
         this.setTitle("Update a book grade");
         this.setResizable(false);
-        gradeField.getItems().addAll(1, 2, 3, 4, 5,6,7,8,9,10);
+        gradeField.getItems().addAll(1, 2, 3, 4, 5, 6, 7, 8, 9, 10); // Betyg från 1 till 10
 
         GridPane grid = new GridPane();
         grid.setAlignment(Pos.CENTER);
         grid.setHgap(5);
         grid.setVgap(5);
         grid.setPadding(new Insets(10, 10, 10, 10));
-
 
         grid.add(new Label("Title "), 1, 1);
         grid.add(titleField, 2, 1);
@@ -53,33 +36,31 @@ public class UpdateGradeDialog extends Dialog<UpdateGradeDialog.GradeUpdate> {
 
         this.getDialogPane().setContent(grid);
 
-        ButtonType buttonTypeOk
-                = new ButtonType("Update", ButtonBar.ButtonData.OK_DONE);
+        ButtonType buttonTypeOk = new ButtonType("Update", ButtonBar.ButtonData.OK_DONE);
         this.getDialogPane().getButtonTypes().add(buttonTypeOk);
-        ButtonType buttonTypeCancel
-                = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+        ButtonType buttonTypeCancel = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
         this.getDialogPane().getButtonTypes().add(buttonTypeCancel);
 
-        this.setResultConverter(new Callback<ButtonType, GradeUpdate>() {
-            @Override
-            public GradeUpdate call(ButtonType b) {
-                GradeUpdate result = null;
-                if (b == buttonTypeOk) {
-                    String title = titleField.getText().trim();
-                    Integer grade = gradeField.getValue();
-
-                    if (!title.isEmpty() && grade != null) {
-                        result = new GradeUpdate(title, grade);
-                    }
-                }
-                clearFormData();
-                return result;
+        // Returnerar GradeUpdate-objekt med titel och betyg när användaren klickar Update
+        this.setResultConverter(b -> {
+            if (b != buttonTypeOk) {
+                titleField.setText("");
+                gradeField.setValue(null);
+                return null;
             }
-        });
-    }
 
-    private void clearFormData() {
-        titleField.setText("");
-        gradeField.setValue(null);
+            String title = titleField.getText().trim();
+            Integer grade = gradeField.getValue();
+            GradeUpdate result;
+            if (!title.isEmpty() && grade != null) {
+                result = new GradeUpdate(title, grade);
+            } else {
+                result = null;
+            }
+            
+            titleField.setText(""); // Rensa fälten
+            gradeField.setValue(null);
+            return result;
+        });
     }
 }

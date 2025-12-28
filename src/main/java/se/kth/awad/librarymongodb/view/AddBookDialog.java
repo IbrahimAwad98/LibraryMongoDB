@@ -5,23 +5,24 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
-import javafx.util.Callback;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Dialog för att lägga till en ny bok.
+ */
 public class AddBookDialog extends Dialog<Book> {
 
     private final TextField titleField = new TextField();
     private final TextField isbnField = new TextField();
-    private final DatePicker publishedField = new DatePicker();
+    private final DatePicker publishedField = new DatePicker(); // Datumväljare för publiceringsdatum
     private final ListView<Author> authorListView = new ListView<>();
-    private final ObservableList<Author> availableAuthors = FXCollections.observableArrayList();
+    private final ObservableList<Author> availableAuthors = FXCollections.observableArrayList(); // Tillgängliga författare
     private final TextField genreField = new TextField();
     private final BooksDbInterface booksDb;
     private final User currentUser;
@@ -29,10 +30,11 @@ public class AddBookDialog extends Dialog<Book> {
     public AddBookDialog(BooksDbInterface booksDb, User currentUser) {
         this.booksDb = booksDb;
         this.currentUser = currentUser;
-        buildAddBookDialog();
-        loadAuthors();
+        buildAddBookDialog(); // Bygg dialogens UI
+        loadAuthors(); // Ladda författare från databas
     }
 
+    // Bygger dialogens användargränssnitt
     private void buildAddBookDialog() {
         this.setTitle("Add a new book");
         this.setResizable(false);
@@ -49,18 +51,19 @@ public class AddBookDialog extends Dialog<Book> {
         grid.add(isbnField, 2, 2);
         grid.add(new Label("Published Date "), 1, 3);
         grid.add(publishedField, 2, 3);
+        publishedField.setPromptText("2025-01-01");
         grid.add(new Label("Genre(s) "), 1, 4);
         grid.add(genreField, 2, 4);
         genreField.setPromptText("Comma-separated (e.g., Fantasy, Young Adult)");
 
         grid.add(new Label("Author(s) "), 1, 5);
         authorListView.setItems(availableAuthors);
-        authorListView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        authorListView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE); // Tillåt flera val
         authorListView.setPrefHeight(150);
         authorListView.setPrefWidth(300);
         authorListView.setPlaceholder(new Label("Loading authors..."));
 
-        // Custom cell factory för att visa författarnamn
+        // Anpassad cell-factory för att visa författarnamn (och födelsedatum om det finns)
         authorListView.setCellFactory(param -> new ListCell<Author>() {
             @Override
             protected void updateItem(Author author, boolean empty) {
@@ -96,58 +99,53 @@ public class AddBookDialog extends Dialog<Book> {
         ButtonType buttonTypeCancel = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
         this.getDialogPane().getButtonTypes().add(buttonTypeCancel);
 
-        this.setResultConverter(new Callback<ButtonType, Book>() {
-            @Override
-            public Book call(ButtonType b) {
-                Book result = null;
-                if (b == buttonTypeOk) {
-                    if (isValidData()) {
-                        String publishedDate = publishedField.getValue() != null
-                                ? publishedField.getValue().toString()
-                                : "";
-                        result = new Book();
-                        result.setIsbn(isbnField.getText().trim());
-                        result.setTitle(titleField.getText().trim());
-                        result.setPublishedDate(publishedDate);
-                        result.setAddedByUserId(currentUser.getUserID());
+        // Konverterar dialogresultat till Book-objekt när användaren klickar OK
+        this.setResultConverter(b -> {
+            if (b != buttonTypeOk || !isValidData()) {
+                clearFormData();
+                return null;
+            }
 
-                        ObservableList<Author> selectedAuthors = authorListView.getSelectionModel().getSelectedItems();
-                        for (Author author : selectedAuthors) {
-                            result.addAuthor(author);
-                        }
+            // Skapa nytt Book-objekt med data från formuläret
+            Book result = new Book();
+            result.setIsbn(isbnField.getText().trim());
+            result.setTitle(titleField.getText().trim());
+            result.setPublishedDate(publishedField.getValue() != null 
+                ? publishedField.getValue().toString() : "");
+            result.setAddedByUserId(currentUser.getUserID());
 
-                        // Hantera genrer
-                        String genresText = genreField.getText().trim();
-                        if (!genresText.isEmpty()) {
-                            String[] genreNames = genresText.split(",");
-                            for (String genreName : genreNames) {
-                                genreName = genreName.trim();
-                                if (!genreName.isEmpty()) {
-                                    Genre genre = new Genre();
-                                    genre.setGenreName(genreName);
-                                    result.addGenre(genre);
-                                }
-                            }
-                        }
+            // Lägg till valda författare
+            for (Author author : authorListView.getSelectionModel().getSelectedItems()) {
+                result.addAuthor(author);
+            }
+
+            // Hantera genrer (kommaseparerade)
+            String genresText = genreField.getText().trim();
+            if (!genresText.isEmpty()) {
+                for (String genreName : genresText.split(",")) {
+                    genreName = genreName.trim();
+                    if (!genreName.isEmpty()) {
+                        Genre genre = new Genre();
+                        genre.setGenreName(genreName);
+                        result.addGenre(genre);
                     }
                 }
-                clearFormData();
-                return result;
             }
+
+            clearFormData();
+            return result;
         });
 
         Button okButton = (Button) this.getDialogPane().lookupButton(buttonTypeOk);
-        okButton.addEventFilter(ActionEvent.ACTION, new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                if (!isValidData()) {
-                    event.consume();
-                    showErrorAlert("Form error", "Please fill in all required fields correctly.");
-                }
+        okButton.addEventFilter(ActionEvent.ACTION, e -> {
+            if (!isValidData()) {
+                e.consume();
+                showErrorAlert("Form error", "Please fill in all required fields correctly.");
             }
         });
     }
 
+    // Laddar författare från databas i bakgrundstråd
     private void loadAuthors() {
         Task<List<Author>> task = new Task<List<Author>>() {
             @Override
@@ -176,6 +174,7 @@ public class AddBookDialog extends Dialog<Book> {
         thread.start();
     }
 
+    // Hanterar när användaren vill lägga till en ny författare
     private void handleAddAuthor() {
         Dialog<Author> authorDialog = new Dialog<>();
         authorDialog.setTitle("Add New Author");
@@ -207,9 +206,12 @@ public class AddBookDialog extends Dialog<Book> {
                 if (name.isEmpty()) {
                     return null;
                 }
-                String birthDate = birthDatePicker.getValue() != null
-                        ? birthDatePicker.getValue().toString()
-                        : null;
+                String birthDate;
+                if (birthDatePicker.getValue() != null) {
+                    birthDate = birthDatePicker.getValue().toString();
+                } else {
+                    birthDate = null;
+                }
                 Author author = new Author();
                 author.setName(name);
                 author.setBirthDate(birthDate);
@@ -220,33 +222,12 @@ public class AddBookDialog extends Dialog<Book> {
 
         Optional<Author> result = authorDialog.showAndWait();
         result.ifPresent(author -> {
-            Task<Author> addTask = new Task<Author>() {
-                @Override
-                protected Author call() throws Exception {
-                    // Author will be added when book is saved
-                    // For now, just return the author
-                    return author;
-                }
-            };
-
-            addTask.setOnSucceeded(e -> {
-                Author addedAuthor = addTask.getValue();
-                availableAuthors.add(addedAuthor);
-                authorListView.getSelectionModel().select(addedAuthor);
-            });
-
-            addTask.setOnFailed(e -> {
-                Throwable ex = addTask.getException();
-                showErrorAlert("Error adding author", ex.getMessage());
-                ex.printStackTrace();
-            });
-
-            Thread thread = new Thread(addTask);
-            thread.setDaemon(true);
-            thread.start();
+            availableAuthors.add(author);
+            authorListView.getSelectionModel().select(author);
         });
     }
 
+    // Kontrollerar om all nödvändig data är ifylld
     private boolean isValidData() {
         if (titleField.getText().trim().isEmpty()) {
             return false;
@@ -269,6 +250,7 @@ public class AddBookDialog extends Dialog<Book> {
         return true;
     }
 
+    // Rensar alla fält i formuläret
     private void clearFormData() {
         titleField.setText("");
         isbnField.setText("");

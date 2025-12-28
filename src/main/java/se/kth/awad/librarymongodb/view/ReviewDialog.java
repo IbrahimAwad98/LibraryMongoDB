@@ -6,6 +6,9 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.control.Dialog;
 
+/**
+ * Dialog för att skriva en recension för en bok.
+ */
 public class ReviewDialog extends Dialog<String> {
 
     private final TextField bookTitleField;
@@ -46,9 +49,11 @@ public class ReviewDialog extends Dialog<String> {
 
         javafx.application.Platform.runLater(() -> bookTitleField.requestFocus());
 
+        // Inaktivera submit-knappen tills både titel och text är ifyllda
         Button submitBtn = (Button) getDialogPane().lookupButton(submitButton);
         submitBtn.setDisable(true);
 
+        // Aktivera/inaktivera submit-knappen baserat på om fälten är ifyllda
         bookTitleField.textProperty().addListener((obs, oldVal, newVal) -> {
             submitBtn.setDisable(newVal.trim().isEmpty() || reviewTextArea.getText().trim().isEmpty());
         });
@@ -57,6 +62,7 @@ public class ReviewDialog extends Dialog<String> {
             submitBtn.setDisable(newVal.trim().isEmpty() || bookTitleField.getText().trim().isEmpty());
         });
 
+        // Returnerar recensionstexten när användaren klickar Send
         setResultConverter(dialogButton -> {
             if (dialogButton == submitButton) {
                 return reviewTextArea.getText().trim();
@@ -64,11 +70,10 @@ public class ReviewDialog extends Dialog<String> {
             return null;
         });
     }
-
+    // Getters
     public String getBookTitle() {
         return bookTitleField.getText().trim();
     }
-
     public String getReviewText() {
         return reviewTextArea.getText().trim();
     }

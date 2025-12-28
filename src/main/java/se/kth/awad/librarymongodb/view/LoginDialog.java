@@ -9,7 +9,7 @@ import javafx.scene.layout.GridPane;
 import javafx.application.Platform;
 
 /**
- * Dialog för inloggning och registrering (VG-funktionalitet).
+ * Användare kan logga in eller skapa nytt konto.
  */
 public class LoginDialog extends Dialog<User> {
 
@@ -33,7 +33,7 @@ public class LoginDialog extends Dialog<User> {
         messageLabel = new Label();
         messageLabel.setStyle("-fx-text-fill: red;");
 
-        // Layout
+        // Skapa layout
         GridPane grid = new GridPane();
         grid.setHgap(10);
         grid.setVgap(10);
@@ -47,21 +47,21 @@ public class LoginDialog extends Dialog<User> {
 
         getDialogPane().setContent(grid);
 
-        // Knappar
-        ButtonType loginButtonType = new ButtonType("Log in", ButtonBar.ButtonData.OK_DONE);
+        // Skapa knappar
+        ButtonType loginButtonType = new ButtonType("Login", ButtonBar.ButtonData.OK_DONE);
         ButtonType registerButtonType = new ButtonType("Create", ButtonBar.ButtonData.OTHER);
         ButtonType cancelButtonType = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
 
         getDialogPane().getButtonTypes().addAll(loginButtonType, registerButtonType, cancelButtonType);
 
-        // Fokusera på username
-        Platform.runLater(() -> usernameField.requestFocus());
+        // Sätt fokus på användarnamnsfältet
+        Platform.runLater(usernameField::requestFocus);
 
-        // Hämta knappar
+        // Hämta knappar för att kunna hantera klick
         Button loginButton = (Button) getDialogPane().lookupButton(loginButtonType);
         Button registerButton = (Button) getDialogPane().lookupButton(registerButtonType);
 
-        // Förhindra att dialog stängs automatiskt
+        // Förhindra att dialog stängs automatiskt, hantera klick manuellt
         loginButton.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
             event.consume();
             handleLogin();
@@ -72,29 +72,23 @@ public class LoginDialog extends Dialog<User> {
             handleRegister();
         });
 
-        // Resultat-konverterare
-        setResultConverter(dialogButton -> {
-            return null;
-        });
+        // Resultat-konverterare (hanteras manuellt i handleLogin/handleRegister)
+        setResultConverter(dialogButton -> null);
     }
 
-
-     // Hanterar inloggning
+    // Hanterar inloggning när användaren klickar "Log in"
     private void handleLogin() {
         String username = usernameField.getText().trim();
         String password = passwordField.getText();
 
-        // Validering
         if (username.isEmpty() || password.isEmpty()) {
             showError("Fill in both username and password!");
             return;
         }
 
         try {
-            // Försök hämta användare (enkel inloggning utan lösenordskontroll i MongoDB)
+            // Hämta användare från databas (enkel inloggning utan lösenordskontroll)
             User user = booksDb.getUserByUsername(username);
-
-            // Lyckad inloggning!
             setResult(user);
             close();
 
@@ -108,7 +102,7 @@ public class LoginDialog extends Dialog<User> {
         String username = usernameField.getText().trim();
         String password = passwordField.getText();
 
-        // Validering
+
         if (username.isEmpty() || password.isEmpty()) {
             showError("Fill in both username and password!");
             return;
@@ -125,15 +119,15 @@ public class LoginDialog extends Dialog<User> {
         }
 
         try {
-            // Skapa nytt konto
+            // Skapa nytt användarkonto
             User newUser = new User();
             newUser.setUsername(username);
             booksDb.addUser(newUser);
 
-            // Logga in automatiskt efter registrering
+            // Hämta den nyskapade användaren och logga in automatiskt
             User user = booksDb.getUserByUsername(username);
 
-            // Visa bekräftelse
+            // Visa bekräftelsemeddelande
             showSuccess("Account created! You are now logged in as " + username);
 
             // Stäng dialogen efter kort fördröjning
@@ -154,13 +148,11 @@ public class LoginDialog extends Dialog<User> {
         }
     }
 
-     //Visar felmeddelande
     private void showError(String message) {
         messageLabel.setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
         messageLabel.setText(message);
     }
 
-     //Visar success-meddelande
     private void showSuccess(String message) {
         messageLabel.setStyle("-fx-text-fill: green; -fx-font-weight: bold;");
         messageLabel.setText(message);

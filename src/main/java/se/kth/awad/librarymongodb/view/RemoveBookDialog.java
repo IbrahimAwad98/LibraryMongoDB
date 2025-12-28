@@ -3,17 +3,19 @@ package se.kth.awad.librarymongodb.view;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.layout.GridPane;
-import javafx.util.Callback;
 import javafx.scene.control.*;
 
-
+/**
+ * Dialog för att ta bort en bok. Endast med title.
+ */
 public class RemoveBookDialog extends Dialog<String> {
-    private final TextField titleField = new TextField();
+    private final TextField titleField = new TextField(); // Fält för boktitel
 
     public RemoveBookDialog() {
         buildRemoveBookDialog();
     }
-    private void buildRemoveBookDialog(){
+
+    private void buildRemoveBookDialog() {
         this.setTitle("Delete a book");
         this.setResizable(false);
 
@@ -34,21 +36,12 @@ public class RemoveBookDialog extends Dialog<String> {
                 = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
         this.getDialogPane().getButtonTypes().add(buttonTypeCancel);
 
-        this.setResultConverter(new Callback<ButtonType, String>() {
-            @Override
-            public String call(ButtonType b) {
-                String result = null;
-                if (b == buttonTypeOk) {
-                    result = titleField.getText().trim();
-                }
-                clearFormData();
-                return result;
-            }
+        // Returnerar boktiteln om användaren klickar Delete, annars null
+        this.setResultConverter(b -> {
+            String result = b == buttonTypeOk ? titleField.getText().trim() : null;
+            titleField.setText(""); // Rensa fältet
+            return result;
         });
-    }
-
-    private void clearFormData() {
-        titleField.setText("");
     }
 }
 
