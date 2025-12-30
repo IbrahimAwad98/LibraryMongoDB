@@ -34,7 +34,8 @@ public class BooksPane extends VBox {
     private MenuItem updateMenuItem;
     private MenuItem reviewMenuItem;
 
-    public BooksPane() {}
+    public BooksPane() {
+    }
 
     // Sätter controller och initialiserar vyn
     public void setController(BookDBController controller) {
@@ -118,7 +119,6 @@ public class BooksPane extends VBox {
         });
         authorsCol.setCellValueFactory(new PropertyValueFactory<>("authorsAsString"));
 
-
         ratingCol.setCellFactory(column -> new TableCell<Book, Integer>() {
             @Override
             protected void updateItem(Integer item, boolean empty) {
@@ -142,7 +142,6 @@ public class BooksPane extends VBox {
             }
         });
     }
-
 
     private void initSearchView(BookDBController controller) {
         searchField = new TextField();
@@ -179,7 +178,6 @@ public class BooksPane extends VBox {
         connectItem.setOnAction(e -> controller.connectToDatabase());
         disconnectItem.setOnAction(e -> controller.disconnect());
         exitItem.setOnAction(e -> Platform.exit());
-
 
         Menu manageMenu = new Menu("Manage");
         addMenuItem = new MenuItem("Add book");
@@ -248,10 +246,14 @@ public class BooksPane extends VBox {
     }
 
     // Aktiverar funktioner som kräver inloggning
-    private void enableLoggedInFeatures() {setMenuItemsEnabled(false);}
+    private void enableLoggedInFeatures() {
+        setMenuItemsEnabled(false);
+    }
 
     // Inaktiverar funktioner som kräver inloggning
-    private void disableLoggedInFeatures() {setMenuItemsEnabled(true);}
+    private void disableLoggedInFeatures() {
+        setMenuItemsEnabled(true);
+    }
 
     // Sätter om menyval ska vara aktiverade eller inaktiverade
     private void setMenuItemsEnabled(boolean disabled) {

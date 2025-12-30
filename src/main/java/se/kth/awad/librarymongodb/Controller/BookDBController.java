@@ -61,7 +61,7 @@ public class BookDBController {
                     case Title -> booksDb.searchBooksByTitle(searchFor);
                     case ISBN -> booksDb.searchBooksByISBN(searchFor);
                     case Author -> booksDb.searchBooksByAuthor(searchFor);
-                    case Rating -> booksDb.searchBooksByRating((int)Double.parseDouble(searchFor));
+                    case Rating -> booksDb.searchBooksByRating((int) Double.parseDouble(searchFor));
                     case Genre -> booksDb.searchBooksByGenre(searchFor);
                     default -> new ArrayList<>();
                 };
@@ -206,7 +206,6 @@ public class BookDBController {
         GradeUpdate gradeUpdate = result.get();
         String title = gradeUpdate.getTitle().trim();
 
-
         if (title.isEmpty()) {
             booksView.showAlertAndWait("Title cannot be empty", WARNING);
             return;
@@ -323,14 +322,15 @@ public class BookDBController {
                 review.setUsername(currentUser.getUsername());
                 review.setRating(0);
                 review.setReviewText(reviewText);
-                //MongoDb förstår inte Date objekt därför bli som string
+                // MongoDb förstår inte Date objekt därför bli som string
                 review.setReviewDate(java.time.LocalDate.now().toString());
                 booksDb.addReview(review);
                 return null;
             }
         };
 
-        task.setOnSucceeded(e -> booksView.showAlertAndWait("Review for '" + bookTitle + "' has been added!", CONFIRMATION));
+        task.setOnSucceeded(
+                e -> booksView.showAlertAndWait("Review for '" + bookTitle + "' has been added!", CONFIRMATION));
         task.setOnFailed(e -> {
             Throwable exception = task.getException();
             if (exception instanceof BooksDbException) {
