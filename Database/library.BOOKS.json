@@ -89,8 +89,8 @@
       "name": "Fantasy"
     }
   ],
-  "average_rating": 8.67,
-  "rating_count": 3,
+  "average_rating": 9,
+  "rating_count": 4,
   "ISBN": "9780156012195"
 },
 {
@@ -125,4 +125,54 @@
   "average_rating": 6,
   "rating_count": 3,
   "ISBN": "9780439708180"
+},
+{
+  "_id": {
+    "$oid": "694fea9f64b8772ca7d8098a"
+  },
+  "book_id": 8,
+  "ISBN": "9780735211292",
+  "title": "Atomic Habits",
+  "published_date": "2018-10-16",
+  "added_by_user_id": 3,
+  "average_rating": 3.5,
+  "rating_count": 2,
+  "authors": [
+    {
+      "author_id": 0,
+      "name": "James Clear",
+      "birth_date": null
+    }
+  ],
+  "genres": [
+    {
+      "genre_id": 0,
+      "name": "Self-help"
+    }
+  ]
+},
+{
+  "_id": {
+    "$oid": "695040d7dbd6400976162982"
+  },
+  "book_id": 9,
+  "ISBN": "9780345816023",
+  "title": "12 Rules for life",
+  "published_date": "2018-01-23",
+  "added_by_user_id": 3,
+  "average_rating": 10,
+  "rating_count": 1,
+  "authors": [
+    {
+      "author_id": 0,
+      "name": "Jordan Peterson",
+      "birth_date": "1962-06-12"
+    }
+  ],
+  "genres": [
+    {
+      "genre_id": 0,
+      "name": "Self-help"
+    }
+  ]
 }]

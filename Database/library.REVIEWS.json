@@ -201,4 +201,64 @@
   "rating": 0,
   "review_text": "Riktigt fin bok!",
   "review_date": "2025-12-27"
+},
+{
+  "_id": {
+    "$oid": "694feab764b8772ca7d8098b"
+  },
+  "review_id": 17,
+  "book_id": 8,
+  "user_id": 3,
+  "username": "ibrahim",
+  "rating": 0,
+  "review_text": "Väldigt inspirerande bok!",
+  "review_date": "2025-12-27"
+},
+{
+  "_id": {
+    "$oid": "694fedd2aa99713b292644e4"
+  },
+  "review_id": 18,
+  "book_id": 8,
+  "user_id": 4,
+  "username": "anna",
+  "rating": 7,
+  "review_text": "",
+  "review_date": "2025-12-27"
+},
+{
+  "_id": {
+    "$oid": "695040ebdbd6400976162983"
+  },
+  "review_id": 19,
+  "book_id": 9,
+  "user_id": 3,
+  "username": "ibrahim",
+  "rating": 0,
+  "review_text": "helt ok bok!",
+  "review_date": "2025-12-27"
+},
+{
+  "_id": {
+    "$oid": "695050702b008c0dcd1c97d2"
+  },
+  "review_id": 20,
+  "book_id": 9,
+  "user_id": 4,
+  "username": "anna",
+  "rating": 10,
+  "review_text": "",
+  "review_date": "2025-12-27"
+},
+{
+  "_id": {
+    "$oid": "695050ac2b008c0dcd1c97d3"
+  },
+  "review_id": 21,
+  "book_id": 4,
+  "user_id": 4,
+  "username": "anna",
+  "rating": 10,
+  "review_text": "",
+  "review_date": "2025-12-27"
 }]
