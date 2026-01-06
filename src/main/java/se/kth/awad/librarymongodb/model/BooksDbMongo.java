@@ -187,6 +187,17 @@ public class BooksDbMongo implements BooksDbInterface {
                 throw new BooksDbException("user id must be set before adding book");
             }
 
+            // Kontrollera om en bok med samma ISBN redan finns
+            String isbn = book.getIsbn();
+            if (isbn != null && !isbn.trim().isEmpty()) {
+                Bson filter = eq("ISBN", isbn.trim());
+                Document existingBook = collection.find(filter).first();
+                if (existingBook != null) {
+                    String existingTitle = existingBook.getString("title");
+                    throw new BooksDbException("A book with ISBN " + isbn + " already exists: \"" + existingTitle + "\"");
+                }
+            }
+
             // Hämta nästa bookId från COUNTERS
             int bookId = getNextSequence("book_id");
             book.setBookId(bookId);
@@ -198,6 +209,8 @@ public class BooksDbMongo implements BooksDbInterface {
             // Konvertera Book objekt till MongoDB Document
             Document document = bookToDocument(book);
             collection.insertOne(document);// spara i MongoDB
+        } catch (BooksDbException e) {
+            throw e; // Kasta vidare BooksDbException som de är
         } catch (Exception e) {
             throw new BooksDbException("Error adding book: " + e.getMessage(), e);
         }
@@ -272,33 +285,16 @@ public class BooksDbMongo implements BooksDbInterface {
             Document existingReview = collection.find(existingFilter).first();
 
             if (existingReview != null) {
-                // Uppdatera befintlig review
-                int existingReviewId = existingReview.getInteger("review_id");
-                review.setReviewId(existingReviewId);
-
-                // Om det redan finns text i review behåll då
-                String existingText = existingReview.getString("review_text");
-                if (existingText != null && !existingText.isEmpty() && 
-                    (review.getReviewText() == null || review.getReviewText().isEmpty())) {
-                    review.setReviewText(existingText);
-                }
-
-                // Om det redan finns rating och ny review har rating = 0, behåll den gamla ratingen
-                int existingRating = existingReview.getInteger("rating", 0);
-                if (existingRating > 0 && review.getRating() == 0) {
-                    review.setRating(existingRating);
-                }
-
-                Document doc = reviewToDocument(review);
-                Bson updateFilter = eq("review_id", existingReviewId);
-                collection.replaceOne(updateFilter, doc);
-            } else {
-                int reviewId = getNextSequence("review_id");
-                review.setReviewId(reviewId);
-
-                Document doc = reviewToDocument(review);
-                collection.insertOne(doc);
+                // Användaren har redan lagt till en review för denna bok
+                throw new BooksDbException("You have already added a review for this book.");
             }
+
+            // Skapa ny review
+            int reviewId = getNextSequence("review_id");
+            review.setReviewId(reviewId);
+
+            Document doc = reviewToDocument(review);
+            collection.insertOne(doc);
 
             // Uppdatera genomsnittsbetyg för boken
             updateBookAverageRating(review.getBookId());
@@ -329,15 +325,21 @@ public class BooksDbMongo implements BooksDbInterface {
     public User getUserByUsername(String username) throws BooksDbException {
         checkConnection();
         try {
+            if (username == null || username.trim().isEmpty()) {
+                throw new BooksDbException("Username cannot be null or empty");
+            }
+            
             MongoCollection<Document> collection = database.getCollection(USERS_COLLECTION);
 
-            Bson filter = eq("username", username);
+            Bson filter = eq("username", username.trim());
 
             Document doc = collection.find(filter).first();
             if (doc == null) {
                 throw new BooksDbException("User not found: " + username);
             }
             return documentToUser(doc);
+        } catch (BooksDbException e) {
+            throw e; // Kasta vidare BooksDbException som de är
         } catch (Exception e) {
             throw new BooksDbException("Error getting user by username: " + e.getMessage(), e);
         }
@@ -347,14 +349,19 @@ public class BooksDbMongo implements BooksDbInterface {
         checkConnection();
         try {
             MongoCollection<Document> collection = database.getCollection(USERS_COLLECTION);
-            Bson filter = eq("userID", userId);
+            Bson filter = eq("user_ID", userId);
 
             Document document = collection.find(filter).first();
             if (document == null) {
                 return "Unknown";
             }
 
-            return document.getString("username");
+            String username = document.getString("username");
+            if (username == null || username.trim().isEmpty()) {
+                return "Unknown";
+            }
+            
+            return username;
         } catch (Exception e) {
             throw new BooksDbException("Error getting username by ID: " + e.getMessage(), e);
         }
@@ -364,12 +371,18 @@ public class BooksDbMongo implements BooksDbInterface {
     public void addUser(User user) throws BooksDbException {
         checkConnection();
         try {
+            String username = user.getUsername();
+            if (username == null || username.trim().isEmpty()) {
+                throw new BooksDbException("Username cannot be null or empty");
+            }
+            
             MongoCollection<Document> collection = database.getCollection(USERS_COLLECTION);
 
             // Kontrollera om användaren redan finns
-            Bson filter = eq("username", user.getUsername());
-            if (collection.find(filter).first() != null) {
-                throw new BooksDbException("Username already exists: " + user.getUsername());
+            Bson filter = eq("username", username.trim());
+            Document existingUser = collection.find(filter).first();
+            if (existingUser != null) {
+                throw new BooksDbException("Username already exists: " + username);
             }
 
             // Hämta nästa userId från COUNTERS
@@ -378,8 +391,10 @@ public class BooksDbMongo implements BooksDbInterface {
 
             Document document = userToDocument(user);
             collection.insertOne(document);
+        } catch (BooksDbException e) {
+            throw e;
         } catch (Exception e) {
-            throw new BooksDbException(e.getMessage(), e);
+            throw new BooksDbException("Error adding user: " + e.getMessage(), e);
         }
     }
 
@@ -483,7 +498,7 @@ public class BooksDbMongo implements BooksDbInterface {
             for (Document review : reviews) {
                 int rating = review.getInteger("rating", 0);
                 if (rating > 0) {
-                    sum += rating; //bara rating > 0
+                    sum += rating;
                     ratingCount++;
                 }
             }
@@ -611,11 +626,31 @@ public class BooksDbMongo implements BooksDbInterface {
     }
 
     private Document userToDocument(User user) {
-        return new Document("userID", user.getUserID()).append("username", user.getUsername());
+        Document doc = new Document("user_ID", user.getUserID())
+                .append("username", user.getUsername());
+        if (user.getPassword() != null) {
+            doc.append("password", user.getPassword());
+        }
+        return doc;
     }
 
     private User documentToUser(Document doc) {
-        return new User(doc.getInteger("userID", 0), doc.getString("username"));
+        Integer userId = doc.getInteger("user_ID");
+        if (userId == null) {
+            userId = doc.getInteger("userID");
+        }
+        if (userId == null) {
+            userId = 0;
+        }
+        
+        String username = doc.getString("username");
+        if (username == null) {
+            username = "";
+        }
+        
+        String password = doc.getString("password");
+        
+        return new User(userId, username, password);
     }
 
     // Skapar index för snabbare sökningar då körs automatiskt vid anslutning.

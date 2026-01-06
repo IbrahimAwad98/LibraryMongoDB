@@ -87,10 +87,24 @@ public class LoginDialog extends Dialog<User> {
         }
 
         try {
-            // Hämta användare från databas (enkel inloggning utan lösenordskontroll)
+            // Hämta användare från databas
             User user = booksDb.getUserByUsername(username);
-            setResult(user);
-            close();
+            
+            // Verifiera lösenord
+            String storedPassword = user.getPassword();
+            if (storedPassword == null || storedPassword.isEmpty()) {
+                // Om användaren inte har något lösenord (gammal användare), tillåt inloggning
+                setResult(user);
+                close();
+            } else if (!storedPassword.equals(password)) {
+                // Lösenord matchar inte
+                showError("Incorrect password!");
+                return;
+            } else {
+                // Lösenord matchar, logga in
+                setResult(user);
+                close();
+            }
 
         } catch (BooksDbException ex) {
             showError(ex.getMessage());
@@ -121,7 +135,8 @@ public class LoginDialog extends Dialog<User> {
         try {
             // Skapa nytt användarkonto
             User newUser = new User();
-            newUser.setUsername(username);
+            newUser.setUsername(username.trim());
+            newUser.setPassword(password);
             booksDb.addUser(newUser);
 
             // Hämta den nyskapade användaren och logga in automatiskt
