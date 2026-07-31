@@ -1,5 +1,7 @@
 # LibraryMongoDB
 
+> Built together with Ahmed as a pair project at KTH.
+
 Ett bibliotekshanteringssystem byggt med JavaFX och MongoDB. Systemet tillåter användare att hantera böcker, recensioner och betyg i en grafisk användargränssnitt.
 
 ## Funktioner
