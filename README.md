@@ -1,170 +1,88 @@
 # LibraryMongoDB
 
-> Built together with Ahmed as a pair project at KTH.
+A JavaFX desktop client for a MongoDB book library — the same MVC structure as
+the MySQL variant, rebuilt on the document model.
 
-Ett bibliotekshanteringssystem byggt med JavaFX och MongoDB. Systemet tillåter användare att hantera böcker, recensioner och betyg i en grafisk användargränssnitt.
+Built with Ahmed El Yasini as a pair project for Databasteknik at KTH.
 
-## Funktioner
+## What works
 
-### Bokhantering
-- **Lägg till böcker**: Lägg till nya böcker med ISBN, titel, publiceringsdatum, författare och genrer
-- **Ta bort böcker**: Ta bort böcker från biblioteket
-- **Sökning**: Sök efter böcker baserat på:
-  - Titel
-  - ISBN
-  - Författare
-  - Genre
-  - Betyg (rating)
+- **Search** by title, ISBN, author, genre, or rating. Author and genre use
+  case-insensitive substring matching; ISBN is exact. Title uses a MongoDB text
+  index, which matches whole words rather than substrings — searching `Lor`
+  will not find *The Lord of the Rings*.
+- **Add and remove books**, with multiple authors and genres per book.
+- **Rate a book** from 1 to 10, or write a text review.
+- **Average rating** recalculated automatically across all ratings above zero,
+  so text-only reviews do not drag the average down.
+- **Accounts** — register and log in; book management is disabled until you do.
 
-### Recensioner och Betyg
-- **Textrecensioner**: Skriv textrecensioner för böcker
-- **Betyg**: Ge betyg (1-10) till böcker
-- **Max ett betyg per bok**: Varje inloggad användare kan ge max ett betyg per bok
-- **Genomsnittsbetyg**: Systemet beräknar automatiskt genomsnittsbetyg baserat på användarnas betyg
-- **Flera textrecensioner**: Användare kan skriva flera textrecensioner för samma bok
+Six indexes are created on the `BOOKS` collection at connect time: a text index
+on `title`, ascending indexes on `ISBN`, `authors.name` and `genres.name`, a
+descending index on `average_rating`, and a unique index on `book_id`.
 
-### Användarhantering
-- **Inloggning**: Logga in med ditt användarnamn
-- **Registrering**: Skapa nya användarkonton
-- **Användarspecifik data**: Dina recensioner och betyg är kopplade till ditt konto
+Most database work runs on JavaFX `Task` threads. The initial connect and both
+login and registration do not — they run on the UI thread and will block the
+window while they wait.
 
-## Teknologier
+## Requirements
 
-- **Java 21**: Programmeringsspråk
-- **JavaFX 21.0.6**: Grafiskt användargränssnitt
-- **MongoDB Driver 4.11.1**: Databasanslutning
-- **Maven**: Byggverktyg och beroendehantering
+- **JDK 21** — the POM targets 21.
+- **MongoDB** running on `localhost:27017`.
+- Maven is not required; the repository ships the Maven wrapper.
 
-## 📁 Projektstruktur
+## Database setup
 
-```
-LibraryMongoDB/
-├── src/main/java/se/kth/awad/librarymongodb/
-│   ├── App.java                          # Huvudklass som startar applikationen
-│   ├── Controller/
-│   │   └── BookDBController.java         # Controller i MVC-mönstret
-│   ├── model/
-│   │   ├── Book.java                     # Bokmodell
-│   │   ├── Author.java                   # Författarmodell
-│   │   ├── Genre.java                    # Genremodell
-│   │   ├── Review.java                   # Recensionsmodell
-│   │   ├── User.java                     # Användarmodell
-│   │   ├── BooksDbInterface.java         # Gränssnitt för databasoperationer
-│   │   ├── BooksDbMongo.java             # MongoDB-implementation
-│   │   └── BooksDbException.java          # Anpassat undantag
-│   └── view/
-│       ├── BooksPane.java                # Huvudvy med boklista och sökning
-│       ├── AddBookDialog.java            # Dialog för att lägga till böcker
-│       ├── RemoveBookDialog.java         # Dialog för att ta bort böcker
-│       ├── ReviewDialog.java             # Dialog för textrecensioner
-│       ├── UpdateGradeDialog.java        # Dialog för att uppdatera betyg
-│       ├── LoginDialog.java              # Dialog för inloggning/registrering
-│       └── GradeUpdate.java              # Hjälpklass för betygsdata
-├── Database/                              # Exempeldata för MongoDB
-│   ├── library.BOOKS.json
-│   ├── library.REVIEWS.json
-│   ├── library.USERS.json
-│   └── library.COUNTERS.json
-└── pom.xml                                # Maven-konfiguration
+The application connects as a MongoDB user named **`appUser`**, authenticating
+against the `library` database itself rather than `admin`. That user must exist
+before the app can connect. The connection string, including the password, is a
+compile-time constant in
+`src/main/java/se/kth/awad/librarymongodb/model/BooksDbMongo.java`.
+
+Sample data lives in `Database/`. The files are JSON arrays, so `mongoimport`
+needs `--jsonArray`, and **the collection names must be uppercase** — the code
+looks for `BOOKS`, `REVIEWS`, `USERS` and `COUNTERS`, and a lowercase
+collection silently returns nothing.
+
+```bash
+mongoimport --db library --collection BOOKS    --jsonArray --file Database/library.BOOKS.json
+mongoimport --db library --collection REVIEWS  --jsonArray --file Database/library.REVIEWS.json
+mongoimport --db library --collection USERS    --jsonArray --file Database/library.USERS.json
+mongoimport --db library --collection COUNTERS --jsonArray --file Database/library.COUNTERS.json
 ```
 
-## Användning
+The database is named **`library`**, lowercase. The UI reports connecting to
+"LibraryDB", but that string is passed to a method that discards it — `library`
+is the database actually used.
 
-### Starta applikationen
+`MongoDB Setup/` contains screenshots of the Compass account setup. There is no
+written guide.
 
-1. Starta applikationen med `mvn javafx:run`
-2. Klicka på **"Connect"** i menyn för att ansluta till databasen
-3. Logga in eller registrera ett nytt konto
+## Building and running
 
-### Grundläggande operationer
+```bash
+./mvnw javafx:run      # Linux / macOS
+mvnw.cmd javafx:run    # Windows
+```
 
-#### Ansluta till databasen
-- Gå till **Database → Connect** i menyn
-- Systemet ansluter till MongoDB-databasen "LibraryDB"
+Nothing connects at startup. Use **File → Connect**, then log in.
 
-#### Söka efter böcker
-1. Välj söktyp från dropdown-menyn (Title, ISBN, Author, Genre, Rating)
-2. Ange sökterm i sökfältet
-3. Klicka på **"Search"** eller tryck Enter
+## Known gaps
 
-#### Lägga till en bok
-1. Logga in först
-2. Gå till **Book → Add Book**
-3. Fyll i:
-   - ISBN
-   - Titel
-   - Publiceringsdatum
-   - Författare (lägg till flera om nödvändigt)
-   - Genrer (lägg till flera om nödvändigt)
-4. Klicka på **"Add"**
+- **A user gets one review *or* one rating per book, ever.** Ratings and text
+  reviews are the same document and share a single uniqueness guard, so writing
+  a review permanently blocks you from rating that book and vice versa. Trying
+  either a second time fails with "You have already added a review for this
+  book." There is no update path in the model — a rating can never be changed.
+- **An account with no stored password can be logged into with any password.**
+  If a user document has a missing, null, or empty `password` field, the login
+  dialog accepts whatever you type. Passwords are also stored and compared in
+  plaintext, and the MongoDB password is committed to the repository.
+- **Imported sample users show as "Unknown".** The sample data writes `userID`
+  while the lookup queries `user_ID`, so the "added by" line in book details
+  cannot resolve any imported user. Accounts created inside the running app
+  are unaffected.
 
-#### Ta bort en bok
-1. Logga in först
-2. Gå till **Book → Remove Book**
-3. Ange exakt titel på boken
-4. Klicka på **"Remove"**
+## License
 
-#### Ge betyg till en bok
-1. Logga in först
-2. Gå till **Book → Update Grade**
-3. Ange boktitel och välj betyg (1-10)
-4. Klicka på **"Update"**
-   - **Obs**: Du kan bara ha ett betyg per bok. Om du uppdaterar betyget ersätts det gamla.
-
-#### Skriva en textrecension
-1. Logga in först
-2. Gå till **Book → Add Review**
-3. Ange boktitel och skriv din recension
-4. Klicka på **"Add Review"**
-   - **Obs**: Du kan skriva flera textrecensioner för samma bok
-
-#### Logga ut
-- Gå till **User → Logout**
-
-
-### Indexering
-
-Systemet använder följande index för optimerad sökning:
-- **Text index** på `title` för snabb titelsökning
-- **Ascending index** på `isbn` för ISBN-sökning
-- **Unique index** på `isbn` för att säkerställa unikhet
-
-## Arkitektur
-
-Projektet följer **MVC (Model-View-Controller)** arkitekturmönstret:
-
-- **Model** (`model/`): Hanterar datalogik och databasoperationer
-  - `BooksDbMongo`: Implementerar databasoperationer mot MongoDB
-  - `Book`, `Author`, `Genre`, `Review`, `User`: Datamodeller
-
-- **View** (`view/`): Hanterar användargränssnittet
-  - `BooksPane`: Huvudvy med boklista
-  - Dialoger för olika operationer (Add, Remove, Review, etc.)
-
-- **Controller** (`Controller/`): Koordinerar mellan Model och View
-  - `BookDBController`: Hanterar användarinteraktioner och uppdaterar både Model och View
-
-### Designprinciper
-
-- **Separation of Concerns**: Tydlig separation mellan data, logik och presentation
-- **OOP-principer**: Användning av klasser, inkapsling och polymorfism
-- **Asynkron hantering**: Användning av JavaFX `Task` för att undvika att frysa UI vid databasoperationer
-- **Felhantering**: Anpassade undantag (`BooksDbException`) för tydlig felhantering
-
-## Noteringar
-
-- **Betyg vs Recensioner**: Ett betyg (rating) är numeriskt (1-10) och varje användare kan bara ha ett betyg per bok. Textrecensioner kan däremot vara flera per användare och bok.
-- **Genomsnittsbetyg**: Beräknas automatiskt baserat på alla betyg > 0. Recensioner med bara text (rating = 0) räknas inte med.
-- **Användarautentisering**: För närvarande enkel användarnamnsbaserad autentisering. Lösenord hanteras men kryptering kan förbättras för produktionsanvändning.
-
-## Författare
-
-Projektet är utvecklat som en del av kursen Databasteknik vid KTH.
-
-## Deltagare
-Ibrahim Awad & Ahmed El Yasini
-
-## Licens
-
-Detta projekt är utvecklat för utbildningssyfte.
-
+[MIT](LICENSE)
